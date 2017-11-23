@@ -5,7 +5,6 @@
 #include <winsock.h>
 #include <cstdio>
 #include <iostream>
-#include <bitset>
 
 #define MY_PORT 9333   // port, z którym bêd¹ siê ³¹czyli u¿ytkownicy
 #define BACK_LOG 10     //jak du¿o mo¿e byæ oczekuj¹cych po³¹czeñ w kolejce
@@ -19,12 +18,13 @@ void modulo();
 void rownosc();
 void potegowanie();
 void wieksza();
+std::string decimalToBinary(int liczba);
+int binaryToDecimal(long long n);
 
 int nextID = 1;
 char komunikat[] = "\0";
 
-void bitsToChar(std::bitset<8>bits);
-std::string decimalToBinary(int liczba);
+int convertBinaryToDecimal(long long n);
 int main()
 {
 	boost::dynamic_bitset<> x(5);
@@ -86,14 +86,40 @@ int main()
 		const char * c = a.c_str();*/
 		
 		//otrzymanie operacji
-		char bufor[3];
-		if(recv(new_fd, bufor, strlen(bufor)-1,0) == -1)
+		char bufor[100];
+		int numBytes;
+		if((numBytes = recv(new_fd, bufor, strlen(bufor),0)) == -1)
 		{
 			perror("recv");
 			exit(1);
 		}
-		std::cout << bufor << std::endl;// << bufor << std::endl;
+		std::cout << std::endl;
+		std::string odebrane;
+		for (int i = 0; i < numBytes; i++) odebrane+= bufor[i];// usuniêcie nieznacz¹cych bitów
 
+		std::string operacja;
+		operacja += odebrane[0];
+		operacja += odebrane[1];
+		operacja += odebrane[2];
+
+		std::string dlugoscDanych;
+		for (int i = 7; i < 39; i++) dlugoscDanych += odebrane[i];
+		std::string::size_type sz = 0;
+		long long ll = std::stoll(dlugoscDanych, &sz, 2); // string to long long, gdzie podstawa to system binarny
+		int dlugoscDanychInt = binaryToDecimal(ll);
+
+		std::string dane;
+		for (int i = 39; i < dlugoscDanychInt + 39 - 3; i++)
+		{
+			std::cout << "i: " << i << std::endl;
+			dane += odebrane[i];
+		}
+
+
+		std::string ID;
+		for (int i = dlugoscDanychInt + 39 - 3; i < dlugoscDanychInt + 39; i++) ID += odebrane[i];
+
+		
 		std::cin.get();
 		/*if(send(new_fd, c, strlen(c), 0)== -1)
 		{
@@ -116,12 +142,6 @@ void rownosc();
 void potegowanie();
 void wieksza();
 
-void bitsToChar(std::bitset<8>bits)
-{
-	std::string s = bits.to_string();
-	const char * c = s.c_str();
-	strcat_s(komunikat, sizeof komunikat, c);
-}
 std::string decimalToBinary(int liczba)
 {
 	/*std::stringstream a(liczba);
@@ -135,4 +155,16 @@ std::string decimalToBinary(int liczba)
 		return decimalToBinary(liczba / 2) + "0";
 	else
 		return decimalToBinary(liczba / 2) + "1";
+}
+int binaryToDecimal(long long n)
+{
+	int decimalNumber = 0, i = 0, remainder;
+	while (n != 0)
+	{
+		remainder = n % 10;
+		n /= 10;
+		decimalNumber += remainder*pow(2, i);
+		++i;
+	}
+	return decimalNumber;
 }
