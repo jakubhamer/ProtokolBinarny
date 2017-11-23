@@ -1,4 +1,6 @@
 #include "stdafx.h"
+#include <boost/dynamic_bitset.hpp>
+
 
 #include <winsock.h>
 #include <cstdio>
@@ -16,6 +18,7 @@ void bitsToChar(std::bitset<8>bits);
 std::string decimalToBinary(int liczba);
 int main()
 {
+	boost::dynamic_bitset<> x(5);
 	WSADATA wsaData;
 
 	if (WSAStartup(MAKEWORD(1, 1), &wsaData) != 0)
