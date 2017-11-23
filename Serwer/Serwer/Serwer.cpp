@@ -1,5 +1,5 @@
 #include "stdafx.h"
-
+// Wersja Kuby :)
 #include <winsock.h>
 #include <cstdio>
 #include <iostream>
