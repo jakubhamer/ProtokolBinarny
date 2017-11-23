@@ -7,9 +7,18 @@
 #include <iostream>
 #include <bitset>
 
-#define MY_PORT 3490   // port, z którym bêd¹ siê ³¹czyli u¿ytkownicy
+#define MY_PORT 9333   // port, z którym bêd¹ siê ³¹czyli u¿ytkownicy
 #define BACK_LOG 10     //jak du¿o mo¿e byæ oczekuj¹cych po³¹czeñ w kolejce
-#define MAXDATASIZE 100 
+#define MAX_DATA_SIZE 100 
+
+void dodawanie();
+void odejmowanie();
+void mnozenie();
+void dzielenie();
+void modulo();
+void rownosc();
+void potegowanie();
+void wieksza();
 
 int nextID = 1;
 char komunikat[] = "\0";
@@ -26,8 +35,6 @@ int main()
 		fprintf(stderr, "WSAStartup failed.\n");
 		exit(1);
 	}
-
-	int iResult;
 
 	int sockfd; //deskryptor gniazda
 	if ((sockfd = socket(PF_INET, SOCK_STREAM, 0)) == -1)
@@ -57,7 +64,6 @@ int main()
 
 	int sin_size;
 	//datagram
-	char *bufor = "\0";//(char*)malloc(65535);
 	while (1)
 	{;
 		sin_size = sizeof(struct sockaddr_in);
@@ -66,25 +72,34 @@ int main()
 			perror("accept");
 			continue;
 		}
-		printf("server: got connection from %s\n", inet_ntoa(theirAddr.sin_addr));
+		std::cout << "server: got connection from: " << inet_ntoa(theirAddr.sin_addr);
+		
 		//nadanie ID klientowi
-		std::string nextIDS;
+		/*std::string nextIDS;
 		int sizeID = decimalToBinary(nextID).size();
-		std::cout << "przed2\n";
 		while (sizeID++ < 3)  nextIDS += "0";
 		nextIDS += decimalToBinary(nextID++);
 		
 		std::string ID_message = "0000000" + nextIDS + "00000000000000000000000000000000";
 		std::bitset<42> byte(ID_message);
 		std::string a = byte.to_string();
-		const char * c = a.c_str();
+		const char * c = a.c_str();*/
 		
-		iResult = send(new_fd, c, strlen(c), 0);
-		if(iResult < 0)
+		//otrzymanie operacji
+		char bufor[3];
+		if(recv(new_fd, bufor, strlen(bufor)-1,0) == -1)
+		{
+			perror("recv");
+			exit(1);
+		}
+		std::cout << bufor << std::endl;// << bufor << std::endl;
+
+		std::cin.get();
+		/*if(send(new_fd, c, strlen(c), 0)== -1)
 		{
 			perror("send ID");
-		}
-		std::cout << iResult;
+		}*/
+
 
 		
 		std::cin.get();
@@ -99,7 +114,7 @@ void dzielenie();
 void modulo();
 void rownosc();
 void potegowanie();
-void pierwiastkowanie();
+void wieksza();
 
 void bitsToChar(std::bitset<8>bits)
 {
