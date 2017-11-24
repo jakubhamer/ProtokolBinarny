@@ -1,3 +1,7 @@
+// KOMUNIKATY
+// 0000 - brak b³êdów
+// 0001 - wynik przekracza maksymaln¹ wartoœæ
+
 #include "stdafx.h"
 #include <boost/dynamic_bitset.hpp>
 
@@ -10,24 +14,27 @@
 #define BACK_LOG 10     //jak du¿o mo¿e byæ oczekuj¹cych po³¹czeñ w kolejce
 #define MAX_DATA_SIZE 100 
 
-void dodawanie();
-void odejmowanie();
-void mnozenie();
-void dzielenie();
-void modulo();
-void rownosc();
-void potegowanie();
-void wieksza();
+void dodawanie(int l1, int l2);
+void odejmowanie(int l1, int l2);
+void mnozenie(int l1, int l2);
+void dzielenie(int l1, int l2);
+void modulo(int l1, int l2);
+void NWD(int l1, int l2);
+void potegowanie(int l1, int l2);
+void wieksza(int l1, int l2);
 std::string decimalToBinary(int liczba);
 int binaryToDecimal(long long n);
+void dodajID(int ID);
+void dodajLiczbeDoBitset(int liczba1);
 
 int nextID = 1;
 char komunikat[] = "\0";
+boost::dynamic_bitset<> bits(7);
+int dlugoscDanych = 0;
 
-int convertBinaryToDecimal(long long n);
+
 int main()
 {
-	boost::dynamic_bitset<> x(5);
 	WSADATA wsaData;
 
 	if (WSAStartup(MAKEWORD(1, 1), &wsaData) != 0)
@@ -72,7 +79,7 @@ int main()
 			perror("accept");
 			continue;
 		}
-		std::cout << "server: got connection from: " << inet_ntoa(theirAddr.sin_addr);
+		std::cout << "server: got connection from: " << inet_ntoa(theirAddr.sin_addr) << std::endl;
 		
 		//nadanie ID klientowi
 		/*std::string nextIDS;
@@ -85,46 +92,112 @@ int main()
 		std::string a = byte.to_string();
 		const char * c = a.c_str();*/
 		
-		//otrzymanie operacji
-		char bufor[100];
-		int numBytes;
-		if((numBytes = recv(new_fd, bufor, strlen(bufor),0)) == -1)
+		while(1)
 		{
-			perror("recv");
-			exit(1);
+			//otrzymanie operacji
+			char bufor[100];
+			int numBytes;
+			if ((numBytes = recv(new_fd, bufor, strlen(bufor), 0)) == -1)
+			{
+				perror("recv");
+				exit(1);
+			}
+			std::cout << std::endl;
+			std::string odebrane;
+			for (int i = 0; i < numBytes; i++) odebrane += bufor[i];// usuniêcie nieznacz¹cych bitów
+			
+			std::string operacja;
+			operacja += odebrane[0];
+			operacja += odebrane[1];
+			operacja += odebrane[2];
+
+			std::string dlugoscDanychS;
+			for (int i = 7; i < 39; i++) dlugoscDanychS += odebrane[i];
+			std::string::size_type sz = 0;
+			long long ll = std::stoll(dlugoscDanychS, &sz, 2); // string to long long, gdzie podstawa to system binarny
+			int dlugoscDanychInt = binaryToDecimal(ll);
+
+			std::string ID;
+			for (int i = 39; i < 42; i++) ID += odebrane[i];
+
+			std::string dane;
+			for (int i = 42; i < dlugoscDanychInt + 42; i++) dane += odebrane[i];
+
+
+			int l1 = 5, l2 = 3; //liczby
+			std::cout << odebrane << std::endl;
+			std::cout << operacja << "----" << dlugoscDanychS << ID << dane << std::endl;
+
+			std::cout << "przed switchem: " << binaryToDecimal(stoll(operacja, &sz, 2)) << std::endl;
+			switch (binaryToDecimal(stoll(operacja, &sz, 2)))
+			{
+			case 0:
+			{
+				dodawanie(l1, l2);
+				break;
+			}
+			case 1:
+			{
+				odejmowanie(l1, l2);
+				break;
+			}
+			case 2:
+			{
+				mnozenie(l1, l2);
+				break;
+			}
+			case 3:
+			{
+				dzielenie(l1, l2);
+				break;
+			}
+			case 4:
+			{
+				modulo(l1, l2);
+				break;
+			}
+			case 5:
+			{
+				NWD(l1, l2);
+				break;
+			}
+			case 6:
+			{
+				potegowanie(l1, l2);
+				break;
+			}
+			case 7:
+			{
+				wieksza(l1, l2);
+				break;
+			}
+
+			}
+			
+			if (bits.size() % 8 != 0)
+			{
+				int temp = bits.size() % 8;
+				for (int i = 0; i < 8 - temp; i++) bits.push_back(0);
+			}
+
+			std::string komunikat;
+			to_string(bits, komunikat);
+			reverse(komunikat.begin(), komunikat.end());
+			const char * msg = komunikat.c_str();
+
+			std::cout << komunikat << std::endl;
+			std::cout << msg << std::endl;
+			if((send(new_fd, msg, strlen(msg),0)) == -1)
+			{
+				perror("send");
+				exit(1);
+			}
+
+			boost::dynamic_bitset<> bits2(7);
+			bits = bits2;
+			dlugoscDanych = 0;
 		}
-		std::cout << std::endl;
-		std::string odebrane;
-		for (int i = 0; i < numBytes; i++) odebrane+= bufor[i];// usuniêcie nieznacz¹cych bitów
 
-		std::string operacja;
-		operacja += odebrane[0];
-		operacja += odebrane[1];
-		operacja += odebrane[2];
-
-		std::string dlugoscDanych;
-		for (int i = 7; i < 39; i++) dlugoscDanych += odebrane[i];
-		std::string::size_type sz = 0;
-		long long ll = std::stoll(dlugoscDanych, &sz, 2); // string to long long, gdzie podstawa to system binarny
-		int dlugoscDanychInt = binaryToDecimal(ll);
-
-		std::string dane;
-		for (int i = 39; i < dlugoscDanychInt + 39 - 3; i++)
-		{
-			std::cout << "i: " << i << std::endl;
-			dane += odebrane[i];
-		}
-
-
-		std::string ID;
-		for (int i = dlugoscDanychInt + 39 - 3; i < dlugoscDanychInt + 39; i++) ID += odebrane[i];
-
-		
-		std::cin.get();
-		/*if(send(new_fd, c, strlen(c), 0)== -1)
-		{
-			perror("send ID");
-		}*/
 
 
 		
@@ -133,14 +206,188 @@ int main()
 	}
 }
 
-void dodawanie();
-void odejmowanie();
-void mnozenie();
-void dzielenie();
-void modulo();
-void rownosc();
-void potegowanie();
-void wieksza();
+void dodawanie(int l1, int l2)
+{
+	bits[0] = 0;
+	bits[1] = 0;
+	bits[2] = 0;
+	
+	long long wynik;
+	if((wynik = l1+l2) < -2147483648LL || (l1 || l2) > 2147483647)
+	{
+		bits[3] = 0;
+		bits[4] = 0;
+		bits[5] = 0;
+		bits[6] = 1;
+	}
+	else
+	{
+		bits[3] = 0;
+		bits[4] = 0;
+		bits[5] = 0;
+		bits[6] = 0;
+	}
+
+	dodajLiczbeDoBitset(wynik);
+}
+void odejmowanie(int l1, int l2)
+{
+	bits[0] = 0;
+	bits[1] = 0;
+	bits[2] = 1;
+
+	long long wynik;
+	if ((wynik = l1 - l2) < -2147483648LL || (l1 || l2) > 2147483647)
+	{
+		bits[3] = 0;
+		bits[4] = 0;
+		bits[5] = 0;
+		bits[6] = 1;
+	}
+	else
+	{
+		bits[3] = 0;
+		bits[4] = 0;
+		bits[5] = 0;
+		bits[6] = 0;
+	}
+
+	dodajLiczbeDoBitset(wynik);
+}
+void mnozenie(int l1, int l2)
+{
+	bits[0] = 0;
+	bits[1] = 1;
+	bits[2] = 0;
+
+	long long wynik;
+	if ((wynik = l1 * l2) < -2147483648LL || (l1 || l2) > 2147483647)
+	{
+		bits[3] = 0;
+		bits[4] = 0;
+		bits[5] = 0;
+		bits[6] = 1;
+	}
+	else
+	{
+		bits[3] = 0;
+		bits[4] = 0;
+		bits[5] = 0;
+		bits[6] = 0;
+	}
+
+	dodajLiczbeDoBitset(wynik);
+}
+void dzielenie(int l1, int l2)
+{
+	bits[0] = 0;
+	bits[1] = 1;
+	bits[2] = 1;
+
+	long long wynik;
+	if ((wynik = l1 / l2) < -2147483648LL || (l1 || l2) > 2147483647)
+	{
+		bits[3] = 0;
+		bits[4] = 0;
+		bits[5] = 0;
+		bits[6] = 1;
+	}
+	else
+	{
+		bits[3] = 0;
+		bits[4] = 0;
+		bits[5] = 0;
+		bits[6] = 0;
+	}
+
+	dodajLiczbeDoBitset(wynik);
+}
+void modulo(int l1, int l2)
+{
+	bits[0] = 1;
+	bits[1] = 0;
+	bits[2] = 0;
+
+	long long wynik;
+	if ((wynik = l1 % l2) < -2147483648LL || (l1 || l2) > 2147483647)
+	{
+		bits[3] = 0;
+		bits[4] = 0;
+		bits[5] = 0;
+		bits[6] = 1;
+	}
+	else
+	{
+		bits[3] = 0;
+		bits[4] = 0;
+		bits[5] = 0;
+		bits[6] = 0;
+	}
+
+	dodajLiczbeDoBitset(wynik);
+}
+void NWD(int l1, int l2)
+{
+	bits[0] = 1;
+	bits[1] = 0;
+	bits[2] = 1;
+
+	while (l1 != l2) // l1 staje siê wynikiem
+	{
+		if (l1 < l2) l2 -= l1;
+		else l1 -= l2;
+	}
+
+	bits[3] = 0;
+	bits[4] = 0;
+	bits[5] = 0;
+	bits[6] = 0;
+
+
+	dodajLiczbeDoBitset(l1);
+}
+void potegowanie(int l1, int l2)
+{
+	bits[0] = 1;
+	bits[1] = 1;
+	bits[2] = 0;
+
+	long long wynik;
+	if ((wynik = pow(l1,l2)) < -2147483648LL || (l1 || l2) > 2147483647)
+	{
+		bits[3] = 0;
+		bits[4] = 0;
+		bits[5] = 0;
+		bits[6] = 1;
+	}
+	else
+	{
+		bits[3] = 0;
+		bits[4] = 0;
+		bits[5] = 0;
+		bits[6] = 0;
+	}
+
+	dodajLiczbeDoBitset(wynik);
+}
+void wieksza(int l1, int l2)
+{
+	bits[0] = 1;
+	bits[1] = 1;
+	bits[2] = 1;
+
+	long long wynik;
+	if (l1 > l2) wynik = l1;
+	else wynik = l2;
+
+	bits[3] = 0;
+	bits[4] = 0;
+	bits[5] = 0;
+	bits[6] = 0;
+	
+
+	dodajLiczbeDoBitset(wynik);
+}
 
 std::string decimalToBinary(int liczba)
 {
@@ -167,4 +414,42 @@ int binaryToDecimal(long long n)
 		++i;
 	}
 	return decimalNumber;
+}
+void dodajLiczbeDoBitset(int liczba1) // dodaje pole d³ufoœci danych oraz liczby do bitsetu 
+{
+	std::string temp1 = decimalToBinary(liczba1);
+	dlugoscDanych += temp1.size();
+
+	//dodawanie pola d³ugoœci danych - musi byæ oddzielnie, poniewa¿ append dodaje liczbê i resztê wype³nia zerami do 32 bitów (dla nas to z³a kolejnoœæ)
+	boost::dynamic_bitset<> poleDlugosci(0);
+	poleDlugosci.append(dlugoscDanych);
+	std::string ciagDlugosciDanych;
+	to_string(poleDlugosci, ciagDlugosciDanych);
+	for (int i = 0; i < ciagDlugosciDanych.size(); i++)
+	{
+		if (ciagDlugosciDanych[i] == '1') bits.push_back(1);
+		else bits.push_back(0);
+	}
+
+	//dodanie ID sesji
+	int id = 0; // TUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU SKOÑCZYÆ
+	dodajID(id);
+
+	//dodanie liczby do bitsetu
+	for (int i = 0; i < temp1.size(); i++)
+	{
+		if (temp1[i] == '1') bits.push_back(1);
+		else bits.push_back(0);
+	}
+
+}
+void dodajID(int ID)
+{
+	std::string IDS = decimalToBinary(ID);
+	for (int i = 0; i < 3 - IDS.size(); i++) bits.push_back(0); // dope³nienie do 3 bitów
+	for (int i = 0; i < IDS.size(); i++)
+	{
+		if (IDS[i] == '1') bits.push_back(1);
+		else bits.push_back(0);
+	}
 }
