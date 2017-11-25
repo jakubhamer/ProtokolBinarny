@@ -27,10 +27,10 @@ int binaryToDecimal(long long n);
 void dodajID(int ID);
 void dodajLiczbeDoBitset(int liczba1);
 
-int nextID = 1;
+int nextID = -1;
 char komunikat[] = "\0";
 boost::dynamic_bitset<> bits(7);
-int dlugoscDanych = 0;
+int dlugoscDanych = 35;
 
 
 int main()
@@ -80,7 +80,7 @@ int main()
 			continue;
 		}
 		std::cout << "server: got connection from: " << inet_ntoa(theirAddr.sin_addr) << std::endl;
-		
+		nextID++;
 		//nadanie ID klientowi
 		/*std::string nextIDS;
 		int sizeID = decimalToBinary(nextID).size();
@@ -102,7 +102,7 @@ int main()
 				perror("recv");
 				exit(1);
 			}
-			std::cout << std::endl;
+
 			std::string odebrane;
 			for (int i = 0; i < numBytes; i++) odebrane += bufor[i];// usuniêcie nieznacz¹cych bitów
 			
@@ -113,23 +113,29 @@ int main()
 
 			std::string dlugoscDanychS;
 			for (int i = 7; i < 39; i++) dlugoscDanychS += odebrane[i];
-			std::string::size_type sz = 0;
-			long long ll = std::stoll(dlugoscDanychS, &sz, 2); // string to long long, gdzie podstawa to system binarny
-			int dlugoscDanychInt = binaryToDecimal(ll);
+			long long dlugoscDanychLong = stoll(dlugoscDanychS, 0, 2); // string to long long, gdzie podstawa to system binarny
+			dlugoscDanychLong -= 35; // 32 bity miejsca drugiej liczby, 3 bity ID
+
+			std::string poczatekDrugiejLiczbyS;
+			for (int i = 39; i < 71; i++) poczatekDrugiejLiczbyS += odebrane[i];
+			long long poczatekDrugiejLiczby = stoll(poczatekDrugiejLiczbyS, 0, 2); // string to long long, gdzie podstawa to system binarny
 
 			std::string ID;
-			for (int i = 39; i < 42; i++) ID += odebrane[i];
+			for (int i = 71; i < 74; i++) ID += odebrane[i];
 
-			std::string dane;
-			for (int i = 42; i < dlugoscDanychInt + 42; i++) dane += odebrane[i];
+			std::string l1S;
+			for (int i = 74; i < poczatekDrugiejLiczby; i++) l1S += odebrane[i];
+			long long l1 = stoll(l1S, 0, 2);
 
+			std::string l2S;
+			for (int i = poczatekDrugiejLiczby; i < dlugoscDanychLong + 74; i++) l2S += odebrane[i];
+			long long l2 = stoll(l2S, 0, 2);
 
-			int l1 = 5, l2 = 3; //liczby
-			std::cout << odebrane << std::endl;
-			std::cout << operacja << "----" << dlugoscDanychS << ID << dane << std::endl;
+			std::cout << "Odebrane: " << odebrane << std::endl;
+			//std::cout <<  operacja  << "----" << dlugoscDanychS << poczatekDrugiejLiczbyS << ID << l1S << l2S << std::endl;
 
-			std::cout << "przed switchem: " << binaryToDecimal(stoll(operacja, &sz, 2)) << std::endl;
-			switch (binaryToDecimal(stoll(operacja, &sz, 2)))
+	
+			switch (stoll(operacja, 0, 2))
 			{
 			case 0:
 			{
@@ -184,25 +190,22 @@ int main()
 			to_string(bits, komunikat);
 			reverse(komunikat.begin(), komunikat.end());
 			const char * msg = komunikat.c_str();
+			std::cout << "Wyslane: " <<  msg << std::endl;
 
-			std::cout << komunikat << std::endl;
-			std::cout << msg << std::endl;
+
 			if((send(new_fd, msg, strlen(msg),0)) == -1)
 			{
 				perror("send");
 				exit(1);
 			}
 
+
 			boost::dynamic_bitset<> bits2(7);
 			bits = bits2;
-			dlugoscDanych = 0;
+			dlugoscDanych = 35;
 		}
+		nextID--;
 
-
-
-		
-		std::cin.get();
-		closesocket(new_fd);
 	}
 }
 
@@ -391,10 +394,6 @@ void wieksza(int l1, int l2)
 
 std::string decimalToBinary(int liczba)
 {
-	/*std::stringstream a(liczba);
-	int liczbaInt;
-	a >> liczbaInt;*/
-
 	if (liczba == 0) return "0";
 	if (liczba == 1) return "1";
 
@@ -402,18 +401,6 @@ std::string decimalToBinary(int liczba)
 		return decimalToBinary(liczba / 2) + "0";
 	else
 		return decimalToBinary(liczba / 2) + "1";
-}
-int binaryToDecimal(long long n)
-{
-	int decimalNumber = 0, i = 0, remainder;
-	while (n != 0)
-	{
-		remainder = n % 10;
-		n /= 10;
-		decimalNumber += remainder*pow(2, i);
-		++i;
-	}
-	return decimalNumber;
 }
 void dodajLiczbeDoBitset(int liczba1) // dodaje pole d³ufoœci danych oraz liczby do bitsetu 
 {
@@ -432,8 +419,7 @@ void dodajLiczbeDoBitset(int liczba1) // dodaje pole d³ufoœci danych oraz liczby
 	}
 
 	//dodanie ID sesji
-	int id = 0; // TUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU SKOÑCZYÆ
-	dodajID(id);
+	dodajID(nextID);
 
 	//dodanie liczby do bitsetu
 	for (int i = 0; i < temp1.size(); i++)
