@@ -1,9 +1,11 @@
 // KOMUNIKATY
-// 0000 - brak b³êdów
+// 0000 - brak b³êdów, wykonuj dzia³ania na dóch liczbach
 // 0001 - wynik przekracza maksymaln¹ wartoœæ
-// 1111 - roz³¹czenie  TODO
+// 0010 - licz silnie
+// 1111 - roz³¹czenie
 
-//TODO: modulo nie dzia³a na liczbach ujemnych
+//TODO: status sesji powinien uwzglêdniaæ wielkoœæ liczb tak podejrzewam eh i czy przy dzieleniu jest 0
+
 #include "stdafx.h"
 #include <boost/dynamic_bitset.hpp>
 
@@ -26,7 +28,7 @@ void potegowanie(int l1, int l2);
 void wieksza(int l1, int l2);
 void liczenieSilni(int l1);
 
-int silnia(int x);
+long long silnia(int x);
 std::string decimalToBinary(int liczba);
 int binaryToDecimal(long long n);
 void dodajID(int ID);
@@ -116,106 +118,176 @@ int main()
 			operacja += odebrane[1];
 			operacja += odebrane[2];
 
-			std::string dlugoscDanychS;
-			for (int i = 7; i < 39; i++) dlugoscDanychS += odebrane[i];
-			long long dlugoscDanychLong = stoll(dlugoscDanychS, 0, 2); // string to long long, gdzie podstawa to system binarny
-			dlugoscDanychLong -= 35; // 32 bity miejsca drugiej liczby, 3 bity ID
+			std::string poleStatusu;
+			poleStatusu += odebrane[3];
+			poleStatusu += odebrane[4];
+			poleStatusu += odebrane[5];
+			poleStatusu += odebrane[6];
 
-			std::string poczatekDrugiejLiczbyS;
-			for (int i = 39; i < 71; i++) poczatekDrugiejLiczbyS += odebrane[i];
-			long long poczatekDrugiejLiczby = stoll(poczatekDrugiejLiczbyS, 0, 2); // string to long long, gdzie podstawa to system binarny
+			if (poleStatusu == "0000")
+			{
+				std::string dlugoscDanychS;
+				for (int i = 7; i < 39; i++) dlugoscDanychS += odebrane[i];
+				long long dlugoscDanychLong = stoll(dlugoscDanychS, 0, 2); // string to long long, gdzie podstawa to system binarny
+				dlugoscDanychLong -= 35; // 32 bity miejsca drugiej liczby, 3 bity ID
 
-			std::string ID;
-			for (int i = 71; i < 74; i++) ID += odebrane[i];
+				std::string poczatekDrugiejLiczbyS;
+				for (int i = 39; i < 71; i++) poczatekDrugiejLiczbyS += odebrane[i];
+				long long poczatekDrugiejLiczby = stoll(poczatekDrugiejLiczbyS, 0, 2); // string to long long, gdzie podstawa to system binarny
 
-			std::string znakL1;
-			znakL1 += odebrane[74];
-			std::string l1S;
-			for (int i = 75; i < poczatekDrugiejLiczby; i++) l1S += odebrane[i];
-			long long l1 = stoll(l1S, 0, 2);
-			if (znakL1 == "0") l1 *= -1;
+				std::string ID;
+				for (int i = 71; i < 74; i++) ID += odebrane[i];
 
-			std::string znakL2;
-			znakL2 += odebrane[poczatekDrugiejLiczby];
-			std::string l2S;
-			for (int i = poczatekDrugiejLiczby + 1; i < dlugoscDanychLong + 74; i++) l2S += odebrane[i];
-			long long l2 = stoll(l2S, 0, 2);
-			if (znakL2 == "0") l2 *= -1;
+				std::string znakL1;
+				znakL1 += odebrane[74];
+				std::string l1S;
+				for (int i = 75; i < poczatekDrugiejLiczby; i++) l1S += odebrane[i];
+				long long l1 = stoll(l1S, 0, 2);
+				if (znakL1 == "0") l1 *= -1;
 
-			std::cout << "Odebrane: " << odebrane << std::endl;
-			//std::cout <<  operacja  << "----" << dlugoscDanychS << poczatekDrugiejLiczbyS << ID << "*" << znakL1 << l1S << "*" << znakL2 << l2S << std::endl;
+				std::string znakL2;
+				znakL2 += odebrane[poczatekDrugiejLiczby];
+				std::string l2S;
+				for (int i = poczatekDrugiejLiczby + 1; i < dlugoscDanychLong + 74; i++) l2S += odebrane[i];
+				long long l2 = stoll(l2S, 0, 2);
+				if (znakL2 == "0") l2 *= -1;
+
+				std::cout << "Odebrane: " << odebrane << std::endl;
+				//std::cout <<  operacja  << "----" << dlugoscDanychS << poczatekDrugiejLiczbyS << ID << "*" << znakL1 << l1S << "*" << znakL2 << l2S << std::endl;
 
 	
-			switch (stoll(operacja, 0, 2))
-			{
-			case 0:
-			{
-				dodawanie(l1, l2);
-				break;
-			}
-			case 1:
-			{
-				odejmowanie(l1, l2);
-				break;
-			}
-			case 2:
-			{
-				mnozenie(l1, l2);
-				break;
-			}
-			case 3:
-			{
-				dzielenie(l1, l2);
-				break;
-			}
-			case 4:
-			{
-				modulo(l1, l2);
-				break;
-			}
-			case 5:
-			{
-				NWD(l1, l2);
-				break;
-			}
-			case 6:
-			{
-				potegowanie(l1, l2);
-				break;
-			}
-			case 7:
-			{
-				wieksza(l1, l2);
-				break;
-			}
+				switch (stoll(operacja, 0, 2))
+					{
+					case 0:
+					{
+						dodawanie(l1, l2);
+						break;
+					}
+					case 1:
+					{
+						odejmowanie(l1, l2);
+						break;
+					}
+					case 2:
+					{
+						mnozenie(l1, l2);
+						break;
+					}
+					case 3:
+					{
+						dzielenie(l1, l2);
+						break;
+					}
+					case 4:
+					{
+						modulo(l1, l2);
+						break;
+					}
+					case 5:
+					{
+						NWD(l1, l2);
+						break;
+					}
+					case 6:
+					{
+						potegowanie(l1, l2);
+						break;
+					}
+					case 7:
+					{
+						wieksza(l1, l2);
+						break;
+					}
 
-			}
-			
+					}
 
-			// uzupe³nienie komunikatu do ca³ych bajtów
-			if (bits.size() % 8 != 0)
-			{
-				int temp = bits.size() % 8;
-				for (int i = 0; i < 8 - temp; i++) bits.push_back(0);
-			}
+				// uzupe³nienie komunikatu do ca³ych bajtów
+				if (bits.size() % 8 != 0)
+				{
+					int temp = bits.size() % 8;
+					for (int i = 0; i < 8 - temp; i++) bits.push_back(0);
+				}
 
-			std::string komunikat;
-			to_string(bits, komunikat);
-			reverse(komunikat.begin(), komunikat.end());
-			const char * msg = komunikat.c_str();
-			std::cout << "Wyslane: " <<  msg << std::endl;
-
-
-			if((send(new_fd, msg, strlen(msg),0)) == -1)
-			{
-				perror("send");
-				exit(1);
-			}
+				std::string komunikat;
+				to_string(bits, komunikat);
+				reverse(komunikat.begin(), komunikat.end());
+				const char * msg = komunikat.c_str();
+				std::cout << "Wyslane: " << msg << std::endl;
 
 
-			boost::dynamic_bitset<> bits2(7);
-			bits = bits2;
-			dlugoscDanych = 35;
+				if ((send(new_fd, msg, strlen(msg), 0)) == -1)
+				{
+					perror("send");
+					exit(1);
+				}
+
+
+				boost::dynamic_bitset<> bits2(7);
+				bits = bits2;
+				dlugoscDanych = 35;
+			}
+			else if (poleStatusu == "0010")
+			{
+				std::cout << "Odebrane: " << odebrane << std::endl;
+				std::cout << "Liczenie silni." << std::endl;
+
+				std::string dlugoscDanychS;
+				for (int i = 7; i < 39; i++) dlugoscDanychS += odebrane[i];
+				long long dlugoscDanychLong = stoll(dlugoscDanychS, 0, 2); // string to long long, gdzie podstawa to system binarny
+				dlugoscDanychLong -= 35; // 32 bity miejsca drugiej liczby, 3 bity ID
+
+				std::string poczatekDrugiejLiczbyS;
+				for (int i = 39; i < 71; i++) poczatekDrugiejLiczbyS += odebrane[i];
+				long long poczatekDrugiejLiczby = stoll(poczatekDrugiejLiczbyS, 0, 2); // string to long long, gdzie podstawa to system binarny
+
+				std::string ID;
+				for (int i = 71; i < 74; i++) ID += odebrane[i];
+
+				std::string znakL1;
+				znakL1 += odebrane[74];
+				std::string l1S;
+				for (int i = 75; i < poczatekDrugiejLiczby; i++) l1S += odebrane[i];
+				long long l1 = stoll(l1S, 0, 2);
+				if (znakL1 == "0") l1 *= -1;
+
+
+				liczenieSilni(l1);
+
+				// uzupe³nienie komunikatu do ca³ych bajtów
+				if (bits.size() % 8 != 0)
+				{
+					int temp = bits.size() % 8;
+					for (int i = 0; i < 8 - temp; i++) bits.push_back(0);
+				}
+
+				std::string komunikat;
+				to_string(bits, komunikat);
+				reverse(komunikat.begin(), komunikat.end());
+				const char * msg = komunikat.c_str();
+				std::cout << "Wyslane: " << msg << std::endl;
+
+
+				if ((send(new_fd, msg, strlen(msg), 0)) == -1)
+				{
+					perror("send");
+					exit(1);
+				}
+
+
+				boost::dynamic_bitset<> bits2(7);
+				bits = bits2;
+				dlugoscDanych = 35;
+
+
+			}
+			else if(poleStatusu == "1111")
+			{
+				std::cout << "Odebrane: " << odebrane << std::endl;
+				std::cout << "Rozlaczenie." << std::endl;
+				shutdown(new_fd, 2);
+				closesocket(sockfd);
+				return 0;
+			}
 		}
 		nextID--;
 
@@ -228,9 +300,9 @@ void dodawanie(int l1, int l2)
 	bits[1] = 0;
 	bits[2] = 0;
 	
-	long long wynik;
+	long long wynik = (long long)l1 + (long long)l2;
 
-	if((wynik = l1+l2) < -2147483648LL || (l1 || l2) > 2147483647)
+	if(wynik < -2147483648LL || wynik > 2147483647)
 	{
 		bits[3] = 0;
 		bits[4] = 0;
@@ -253,8 +325,8 @@ void odejmowanie(int l1, int l2)
 	bits[1] = 0;
 	bits[2] = 1;
 
-	long long wynik;
-	if ((wynik = l1 - l2) < -2147483648LL || (l1 || l2) > 2147483647)
+	long long wynik = (long long)l1 - (long long)l2;
+	if (wynik < -2147483648LL || wynik > 2147483647)
 	{
 		bits[3] = 0;
 		bits[4] = 0;
@@ -277,8 +349,9 @@ void mnozenie(int l1, int l2)
 	bits[1] = 1;
 	bits[2] = 0;
 
-	long long wynik;
-	if ((wynik = l1 * l2) < -2147483648LL || (l1 || l2) > 2147483647)
+	long long wynik = (long long)l1 * (long long)l2;
+	std::cout << wynik << std::endl;
+	if (wynik < -2147483648LL || wynik > 2147483647LL)
 	{
 		bits[3] = 0;
 		bits[4] = 0;
@@ -301,8 +374,8 @@ void dzielenie(int l1, int l2)
 	bits[1] = 1;
 	bits[2] = 1;
 
-	long long wynik;
-	if ((wynik = l1 / l2) < -2147483648LL || (l1 || l2) > 2147483647)
+	long long wynik = (long long)l1 / (long long)l2;
+	if (wynik < -2147483648LL || wynik > 2147483647)
 	{
 		bits[3] = 0;
 		bits[4] = 0;
@@ -325,8 +398,8 @@ void modulo(int l1, int l2)
 	bits[1] = 0;
 	bits[2] = 0;
 
-	long long wynik;
-	if ((wynik = l1 % l2) < -2147483648LL || (l1 || l2) > 2147483647)
+	long long wynik = (long long)l1 % (long long)l2;
+	if (wynik < -2147483648LL || wynik > 2147483647)
 	{
 		bits[3] = 0;
 		bits[4] = 0;
@@ -349,6 +422,9 @@ void NWD(int l1, int l2)
 	bits[1] = 0;
 	bits[2] = 1;
 
+	l1 = abs(l1);
+	l2 = abs(l2);
+
 	while (l1 != l2) // l1 staje siê wynikiem
 	{
 		if (l1 < l2) l2 -= l1;
@@ -369,8 +445,8 @@ void potegowanie(int l1, int l2)
 	bits[1] = 1;
 	bits[2] = 0;
 
-	long long wynik;
-	if ((wynik = pow(l1,l2)) < -2147483648LL || (l1 || l2) > 2147483647)
+	long long wynik = pow((long long)l1, (long long)l2);
+	if (wynik < -2147483648LL || wynik > 2147483647)
 	{
 		bits[3] = 0;
 		bits[4] = 0;
@@ -411,8 +487,7 @@ void liczenieSilni(int l1)
 	bits[0] = 0;
 	bits[1] = 0;
 	bits[2] = 0;
-
-	long long wynik = silnia(l1);
+	long long wynik = silnia((long long)l1);
 	if (wynik  < -2147483648LL || wynik > 2147483647)
 	{
 		bits[3] = 0;
@@ -427,11 +502,10 @@ void liczenieSilni(int l1)
 		bits[5] = 0;
 		bits[6] = 0;
 	}
-
 	dodajLiczbeDoBitset(wynik);
 }
 
-int silnia(int x)
+long long silnia(int x)
 {
 	if (x == 0 || x == 1) return 1;
 	else return x*silnia(x - 1);
