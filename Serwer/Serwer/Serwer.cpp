@@ -1,7 +1,9 @@
 // KOMUNIKATY
 // 0000 - brak b³êdów
 // 0001 - wynik przekracza maksymaln¹ wartoœæ
+// 1111 - roz³¹czenie  TODO
 
+//TODO: modulo nie dzia³a na liczbach ujemnych
 #include "stdafx.h"
 #include <boost/dynamic_bitset.hpp>
 
@@ -22,6 +24,9 @@ void modulo(int l1, int l2);
 void NWD(int l1, int l2);
 void potegowanie(int l1, int l2);
 void wieksza(int l1, int l2);
+void liczenieSilni(int l1);
+
+int silnia(int x);
 std::string decimalToBinary(int liczba);
 int binaryToDecimal(long long n);
 void dodajID(int ID);
@@ -123,16 +128,22 @@ int main()
 			std::string ID;
 			for (int i = 71; i < 74; i++) ID += odebrane[i];
 
+			std::string znakL1;
+			znakL1 += odebrane[74];
 			std::string l1S;
-			for (int i = 74; i < poczatekDrugiejLiczby; i++) l1S += odebrane[i];
+			for (int i = 75; i < poczatekDrugiejLiczby; i++) l1S += odebrane[i];
 			long long l1 = stoll(l1S, 0, 2);
+			if (znakL1 == "0") l1 *= -1;
 
+			std::string znakL2;
+			znakL2 += odebrane[poczatekDrugiejLiczby];
 			std::string l2S;
-			for (int i = poczatekDrugiejLiczby; i < dlugoscDanychLong + 74; i++) l2S += odebrane[i];
+			for (int i = poczatekDrugiejLiczby + 1; i < dlugoscDanychLong + 74; i++) l2S += odebrane[i];
 			long long l2 = stoll(l2S, 0, 2);
+			if (znakL2 == "0") l2 *= -1;
 
 			std::cout << "Odebrane: " << odebrane << std::endl;
-			//std::cout <<  operacja  << "----" << dlugoscDanychS << poczatekDrugiejLiczbyS << ID << l1S << l2S << std::endl;
+			//std::cout <<  operacja  << "----" << dlugoscDanychS << poczatekDrugiejLiczbyS << ID << "*" << znakL1 << l1S << "*" << znakL2 << l2S << std::endl;
 
 	
 			switch (stoll(operacja, 0, 2))
@@ -180,6 +191,8 @@ int main()
 
 			}
 			
+
+			// uzupe³nienie komunikatu do ca³ych bajtów
 			if (bits.size() % 8 != 0)
 			{
 				int temp = bits.size() % 8;
@@ -216,6 +229,7 @@ void dodawanie(int l1, int l2)
 	bits[2] = 0;
 	
 	long long wynik;
+
 	if((wynik = l1+l2) < -2147483648LL || (l1 || l2) > 2147483647)
 	{
 		bits[3] = 0;
@@ -391,6 +405,37 @@ void wieksza(int l1, int l2)
 
 	dodajLiczbeDoBitset(wynik);
 }
+void liczenieSilni(int l1)
+{
+	// bity niewa¿ne
+	bits[0] = 0;
+	bits[1] = 0;
+	bits[2] = 0;
+
+	long long wynik = silnia(l1);
+	if (wynik  < -2147483648LL || wynik > 2147483647)
+	{
+		bits[3] = 0;
+		bits[4] = 0;
+		bits[5] = 0;
+		bits[6] = 1;
+	}
+	else
+	{
+		bits[3] = 0;
+		bits[4] = 0;
+		bits[5] = 0;
+		bits[6] = 0;
+	}
+
+	dodajLiczbeDoBitset(wynik);
+}
+
+int silnia(int x)
+{
+	if (x == 0 || x == 1) return 1;
+	else return x*silnia(x - 1);
+}
 
 std::string decimalToBinary(int liczba)
 {
@@ -407,6 +452,9 @@ void dodajLiczbeDoBitset(int liczba1) // dodaje pole d³ufoœci danych oraz liczby
 	std::string temp1 = decimalToBinary(liczba1);
 	dlugoscDanych += temp1.size();
 
+	if (liczba1 >= 0) dlugoscDanych++;
+
+
 	//dodawanie pola d³ugoœci danych - musi byæ oddzielnie, poniewa¿ append dodaje liczbê i resztê wype³nia zerami do 32 bitów (dla nas to z³a kolejnoœæ)
 	boost::dynamic_bitset<> poleDlugosci(0);
 	poleDlugosci.append(dlugoscDanych);
@@ -420,9 +468,23 @@ void dodajLiczbeDoBitset(int liczba1) // dodaje pole d³ufoœci danych oraz liczby
 
 	//dodanie ID sesji
 	dodajID(nextID);
+	
+	// znak liczby i uwzglêdnienie czy liczba jest ujemna lub dodatnia, ujemna ma dodatkowo znak 0 na pocz¹tku, trzeba sie go pozbyæ
+
+	int i;
+	if (liczba1 > 0)
+	{
+		bits.push_back(1);
+		i = 0;
+	}
+	else
+	{
+		bits.push_back(0);
+		i = 1;
+	}
 
 	//dodanie liczby do bitsetu
-	for (int i = 0; i < temp1.size(); i++)
+	for (; i < temp1.size(); i++)
 	{
 		if (temp1[i] == '1') bits.push_back(1);
 		else bits.push_back(0);
