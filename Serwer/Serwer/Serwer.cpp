@@ -2,6 +2,8 @@
 // 0000 - brak b³êdów, wykonuj dzia³ania na dóch liczbach
 // 0001 - wynik przekracza maksymaln¹ wartoœæ
 // 0010 - licz silnie
+// 0011 - dzielnik nie mo¿e byæ równy 0
+// 0100 - argument silni musi byæ wiekszy b¹dŸ równy 0.
 // 1111 - roz³¹czenie
 
 //TODO: status sesji powinien uwzglêdniaæ wielkoœæ liczb tak podejrzewam eh i czy przy dzieleniu jest 0
@@ -113,6 +115,8 @@ int main()
 			std::string odebrane;
 			for (int i = 0; i < numBytes; i++) odebrane += bufor[i];// usuniêcie nieznacz¹cych bitów
 			
+			std::cout << "Odebrane: " << odebrane << std::endl;
+			
 			std::string operacja;
 			operacja += odebrane[0];
 			operacja += odebrane[1];
@@ -123,6 +127,7 @@ int main()
 			poleStatusu += odebrane[4];
 			poleStatusu += odebrane[5];
 			poleStatusu += odebrane[6];
+
 
 			if (poleStatusu == "0000")
 			{
@@ -140,6 +145,7 @@ int main()
 
 				std::string znakL1;
 				znakL1 += odebrane[74];
+
 				std::string l1S;
 				for (int i = 75; i < poczatekDrugiejLiczby; i++) l1S += odebrane[i];
 				long long l1 = stoll(l1S, 0, 2);
@@ -147,12 +153,12 @@ int main()
 
 				std::string znakL2;
 				znakL2 += odebrane[poczatekDrugiejLiczby];
+
 				std::string l2S;
 				for (int i = poczatekDrugiejLiczby + 1; i < dlugoscDanychLong + 74; i++) l2S += odebrane[i];
 				long long l2 = stoll(l2S, 0, 2);
 				if (znakL2 == "0") l2 *= -1;
 
-				std::cout << "Odebrane: " << odebrane << std::endl;
 				//std::cout <<  operacja  << "----" << dlugoscDanychS << poczatekDrugiejLiczbyS << ID << "*" << znakL1 << l1S << "*" << znakL2 << l2S << std::endl;
 
 	
@@ -228,7 +234,6 @@ int main()
 			}
 			else if (poleStatusu == "0010")
 			{
-				std::cout << "Odebrane: " << odebrane << std::endl;
 				std::cout << "Liczenie silni." << std::endl;
 
 				std::string dlugoscDanychS;
@@ -282,7 +287,6 @@ int main()
 			}
 			else if(poleStatusu == "1111")
 			{
-				std::cout << "Odebrane: " << odebrane << std::endl;
 				std::cout << "Rozlaczenie." << std::endl;
 				shutdown(new_fd, 2);
 				closesocket(sockfd);
@@ -373,7 +377,17 @@ void dzielenie(int l1, int l2)
 	bits[0] = 0;
 	bits[1] = 1;
 	bits[2] = 1;
+	if (l2 == 0)
+	{
+		std::cout << "l2: " << l2 << std::endl;
+		bits[3] = 0;
+		bits[4] = 0;
+		bits[5] = 1;
+		bits[6] = 1;
 
+		dodajLiczbeDoBitset(0);
+		return;
+	}
 	long long wynik = (long long)l1 / (long long)l2;
 	if (wynik < -2147483648LL || wynik > 2147483647)
 	{
@@ -398,6 +412,17 @@ void modulo(int l1, int l2)
 	bits[1] = 0;
 	bits[2] = 0;
 
+	if (l2 == 0)
+	{
+		std::cout << "l2: " << l2 << std::endl;
+		bits[3] = 0;
+		bits[4] = 0;
+		bits[5] = 1;
+		bits[6] = 1;
+
+		dodajLiczbeDoBitset(0);
+		return;
+	}
 	long long wynik = (long long)l1 % (long long)l2;
 	if (wynik < -2147483648LL || wynik > 2147483647)
 	{
@@ -487,7 +512,20 @@ void liczenieSilni(int l1)
 	bits[0] = 0;
 	bits[1] = 0;
 	bits[2] = 0;
+
+
+	if (l1 < 0)
+	{
+		bits[3] = 0;
+		bits[4] = 1;
+		bits[5] = 0;
+		bits[6] = 0;
+
+		dodajLiczbeDoBitset(0);
+		return;
+	}
 	long long wynik = silnia((long long)l1);
+	
 	if (wynik  < -2147483648LL || wynik > 2147483647)
 	{
 		bits[3] = 0;
