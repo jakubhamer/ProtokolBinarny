@@ -5,7 +5,7 @@
 // 0011 - dzielnik nie mo¿e byæ równy 0
 // 0100 - argument silni musi byæ wiekszy b¹dŸ równy 0.
 // 1111 - roz³¹czenie
-//
+
 //TODO: status sesji powinien uwzglêdniaæ wielkoœæ liczb tak podejrzewam eh i czy przy dzieleniu jest 0
 
 #include "stdafx.h"
