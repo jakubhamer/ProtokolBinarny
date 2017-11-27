@@ -20,21 +20,21 @@
 #define BACK_LOG 10     //jak du¿o mo¿e byæ oczekuj¹cych po³¹czeñ w kolejce
 #define MAX_DATA_SIZE 100 
 
-void dodawanie(int l1, int l2);
-void odejmowanie(int l1, int l2);
-void mnozenie(int l1, int l2);
-void dzielenie(int l1, int l2);
-void modulo(int l1, int l2);
-void NWD(int l1, int l2);
-void potegowanie(int l1, int l2);
-void wieksza(int l1, int l2);
+void dodawanie(long long l1, long long l2);
+void odejmowanie(long long l1, long long l2);
+void mnozenie(long long l1, long long l2);
+void dzielenie(long long l1, long long l2);
+void modulo(long long l1, long long l2);
+void NWD(long long l1, long long l2);
+void potegowanie(long long l1, long long l2);
+void wieksza(long long l1, long long l2);
 void liczenieSilni(int l1);
 
 long long silnia(int x);
-std::string decimalToBinary(int liczba);
+std::string decimalToBinary(long long liczba);
 int binaryToDecimal(long long n);
 void dodajID(int ID);
-void dodajLiczbeDoBitset(int liczba1);
+void dodajLiczbeDoBitset(long long liczba1);
 
 int nextID = -1;
 char komunikat[] = "\0";
@@ -158,6 +158,8 @@ int main()
 				for (int i = poczatekDrugiejLiczby + 1; i < dlugoscDanychLong + 74; i++) l2S += odebrane[i];
 				long long l2 = stoll(l2S, 0, 2);
 				if (znakL2 == "0") l2 *= -1;
+				std::cout << l1 << std::endl;
+				std::cout << l2 << std::endl;
 
 				//std::cout <<  operacja  << "----" << dlugoscDanychS << poczatekDrugiejLiczbyS << ID << "*" << znakL1 << l1S << "*" << znakL2 << l2S << std::endl;
 
@@ -298,7 +300,7 @@ int main()
 	}
 }
 
-void dodawanie(int l1, int l2)
+void dodawanie(long long l1, long long l2)
 {
 	bits[0] = 0;
 	bits[1] = 0;
@@ -323,13 +325,14 @@ void dodawanie(int l1, int l2)
 
 	dodajLiczbeDoBitset(wynik);
 }
-void odejmowanie(int l1, int l2)
+void odejmowanie(long long l1, long long l2)
 {
 	bits[0] = 0;
 	bits[1] = 0;
 	bits[2] = 1;
 
 	long long wynik = (long long)l1 - (long long)l2;
+
 	if (wynik < -2147483648LL || wynik > 2147483647)
 	{
 		bits[3] = 0;
@@ -347,14 +350,14 @@ void odejmowanie(int l1, int l2)
 
 	dodajLiczbeDoBitset(wynik);
 }
-void mnozenie(int l1, int l2)
+void mnozenie(long long l1, long long l2)
 {
 	bits[0] = 0;
 	bits[1] = 1;
 	bits[2] = 0;
 
 	long long wynik = (long long)l1 * (long long)l2;
-	std::cout << wynik << std::endl;
+
 	if (wynik < -2147483648LL || wynik > 2147483647LL)
 	{
 		bits[3] = 0;
@@ -372,7 +375,7 @@ void mnozenie(int l1, int l2)
 
 	dodajLiczbeDoBitset(wynik);
 }
-void dzielenie(int l1, int l2)
+void dzielenie(long long l1, long long l2)
 {
 	bits[0] = 0;
 	bits[1] = 1;
@@ -406,7 +409,7 @@ void dzielenie(int l1, int l2)
 
 	dodajLiczbeDoBitset(wynik);
 }
-void modulo(int l1, int l2)
+void modulo(long long l1, long long l2)
 {
 	bits[0] = 1;
 	bits[1] = 0;
@@ -414,7 +417,6 @@ void modulo(int l1, int l2)
 
 	if (l2 == 0)
 	{
-		std::cout << "l2: " << l2 << std::endl;
 		bits[3] = 0;
 		bits[4] = 0;
 		bits[5] = 1;
@@ -441,7 +443,7 @@ void modulo(int l1, int l2)
 
 	dodajLiczbeDoBitset(wynik);
 }
-void NWD(int l1, int l2)
+void NWD(long long l1, long long l2)
 {
 	bits[0] = 1;
 	bits[1] = 0;
@@ -464,7 +466,7 @@ void NWD(int l1, int l2)
 
 	dodajLiczbeDoBitset(l1);
 }
-void potegowanie(int l1, int l2)
+void potegowanie(long long l1, long long l2)
 {
 	bits[0] = 1;
 	bits[1] = 1;
@@ -488,7 +490,7 @@ void potegowanie(int l1, int l2)
 
 	dodajLiczbeDoBitset(wynik);
 }
-void wieksza(int l1, int l2)
+void wieksza(long long l1, long long l2)
 {
 	bits[0] = 1;
 	bits[1] = 1;
@@ -549,7 +551,7 @@ long long silnia(int x)
 	else return x*silnia(x - 1);
 }
 
-std::string decimalToBinary(int liczba)
+std::string decimalToBinary(long long liczba)
 {
 	if (liczba == 0) return "0";
 	if (liczba == 1) return "1";
@@ -559,7 +561,7 @@ std::string decimalToBinary(int liczba)
 	else
 		return decimalToBinary(liczba / 2) + "1";
 }
-void dodajLiczbeDoBitset(int liczba1) // dodaje pole d³ufoœci danych oraz liczby do bitsetu 
+void dodajLiczbeDoBitset(long long liczba1) // dodaje pole d³ufoœci danych oraz liczby do bitsetu 
 {
 	std::string temp1 = decimalToBinary(liczba1);
 	dlugoscDanych += temp1.size();
