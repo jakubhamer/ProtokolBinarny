@@ -1,13 +1,12 @@
 #include "stdafx.h"
 //Autorski protokół internetowy
 //Wszelkie prawa zastrzeżone
-//Napisany przez Marcina Hradowicza i Jakuba Hamerlińskiego
+//Napisany przez Marcina Hradowicz i Jakuba Hamerlińskiego
 #include <winsock.h>
 #include <cstdio>
 #include <iostream>
 #include <string>
 #include <boost/dynamic_bitset.hpp>
-#include <algorithm>
 
 void dodawanie();
 void odejmowanie();
@@ -19,42 +18,21 @@ void potegowanie();
 void wieksza();
 void liczenieSilni();
 
-std::string decimalToBinary(int liczba);
+std::string decimalToBinary(long long liczba);
 void odwrocenieStringa(std::string name);
-void dodajLiczbyDoBitset(int liczba1, int liczba2);
-void dodajWartosciDoBitset(int liczba);
+void dodajLiczbyDoBitset(long long liczba1, long long liczba2);
+void dodajWartosciDoBitset(long long liczba);
 void dodajKomunikat();
 void dodajID(int ID);
+int byteToInt(std::string byte);
 
 long long ID = 0;
 boost::dynamic_bitset<> bits(7);
 int dlugoscDanych = 35; // 32 bity miejsca drugiej liczby, 3 bity ID
 
-int main(int argc, char *argv[])
+int main()
 {	
-	
-	/*bits[0] = 1;	bits[1] = 1; 	bits[2] = 1;	bits[3] = 0;	bits[4] = 1;	bits[5] = 1;
-	bits[6] =0;	bits[7] = 0;	bits[8] = 0;	bits[9] = 0;	bits[10] = 1;	bits[11] = 1;
-	
-	bits2[0] = 1;	bits2[1] = 1; 	bits2[2] = 1;	bits2[3] = 1;
-	for(int i =0 ; i<45 ; i++)
-	{
-		std::cout << bits[i];
-	}
-	std::cout << std::endl;
-	
-	bits.append(500);
-	std::string wiadomosc;
-	to_string(bits, wiadomosc);
-	//std::reverse(wiadomosc.begin(),wiadomosc.end());
-	
-	std::cout << wiadomosc;*/
-
-
-	/*long long q = 5;
-	long long q1 = -5;
-	std::cout << q + q1;
-	std::cin.get();*/
+	// konfiguracja pod system windows
 	WSADATA wsaData;
 	if (WSAStartup(MAKEWORD(1, 1), &wsaData) != 0)
 	{
@@ -63,33 +41,32 @@ int main(int argc, char *argv[])
 	}
 
 
-	int sockfd; //deskryptor gniazda klienta
-	if((sockfd = socket(PF_INET, SOCK_STREAM, 0))==-1)
+	int sockfd; // deskryptor gniazda klienta
+	if((sockfd = socket(PF_INET, SOCK_STREAM, 0))==-1) // zwraca deskryptor gniazda
 	{
 		perror("socket");
 		exit(1);
 	}
 
 	char yes = '1';
-	if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == -1)
+	if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == -1) // sprawdza czy dany port jest wonly aby go przypisac
 	{
 		perror("setsockopt");
 		exit(1);
 	}
 	
-	//wczytywanie IP serwera
+	// wczytywanie IP serwera
 	char DEST_IP[16];
-	std::cout << "Podaj adres IP: \n";
+	std::cout << "IP adrress? : \n";
 	std::cin >> DEST_IP;
-	//DEST_IP = "127.0.0.1";
-
+	
 	//wczytywanie portu serwera
 	u_short DEST_PORT;
-	std::cout << "Podaj port (9333): \n";
+	std::cout <<"Port? (9333) : \n";
 	std::cin >> DEST_PORT;
 	//DEST_PORT = 9333;
 
-	sockaddr_in theirAddr;
+	sockaddr_in theirAddr; // adres serwera
 	theirAddr.sin_family = PF_INET;
 	theirAddr.sin_port = htons(DEST_PORT);
 	theirAddr.sin_addr.s_addr = inet_addr(DEST_IP);
@@ -103,22 +80,22 @@ int main(int argc, char *argv[])
 	}
 	printf("client: got connection to %s\n", inet_ntoa(theirAddr.sin_addr));
 	
-	int wybor;
+	int choice;
 	while (1)
-	{
-		std::cout << "Operacje:\n";
-		std::cout << "1. Dodawanie\n"; //000
-		std::cout << "2. Odejmowanie\n"; //001
-		std::cout << "3. Mnozenie\n"; //010
-		std::cout << "4. Dzielenie\n"; //011
+	{	
+		std::cout << "Operation:\n";
+		std::cout << "1. Addition\n"; //000
+		std::cout << "2. Substraction\n"; //001
+		std::cout << "3. Multiplication\n"; //010
+		std::cout << "4. Division\n"; //011
 		std::cout << "5. Modulo\n"; //100
-		std::cout << "6. NWD\n"; //101
-		std::cout << "7. Potegowanie\n"; //110
-		std::cout << "8. Ktora wieksza?\n"; //111
-		std::cout << "9. Rozlaczenie z serwerem\n"; //111
-		std::cout << "10. Silnia\n"; //pole statusu - licz silnie  0010
-		std::cin >> wybor;
-		switch (wybor)
+		std::cout << "6. GCD\n"; //101
+		std::cout << "7. Exponentiation\n"; //110
+		std::cout << "8. Which number is bigger?\n"; //111
+		std::cout << "9. Factorial\n"; //111
+		std::cout << "10. Disconnecting with server\n"; //pole statusu - licz silnie  0010
+		std::cin >> choice;
+		switch (choice)
 		{
 		case 1:
 		{
@@ -162,6 +139,12 @@ int main(int argc, char *argv[])
 		}
 		case 9:
 		{
+			liczenieSilni();
+			break;
+
+		}
+		case 10:
+		{
 			// pole operacji - domyśkne
 			bits[0] = 0;
 			bits[1] = 0;
@@ -197,25 +180,27 @@ int main(int argc, char *argv[])
 			//wysłanie żądania o rozłączenie
 			std::string komunikat;
 			to_string(bits, komunikat);
-			reverse(komunikat.begin(), komunikat.end());
-			const char * msg = komunikat.c_str();
+			reverse(komunikat.begin(), komunikat.end()); // odwrócenie komunikatu
 
+			char msg[25];
 
-			if (send(sockfd, msg, strlen(msg), 0) == -1)
+			for (int i = 0; i<komunikat.size() / 8; i++) msg[i] = byteToInt(komunikat.substr(i * 8, 8)); // zamiana każdego bajtu na integer
+
+			int bytesSent;
+
+			bytesSent = (send(sockfd, msg, komunikat.size() / 8, 0)); // wysłanie komunikatu
+			if (bytesSent < 0)
 			{
 				perror("send");
 				exit(1);
 			}
-			std::cout << "Wyslane: " << msg << std::endl;
+			std::cout << "Send string: " << komunikat << std::endl;
+			std::cout << "Send bytes: " << bytesSent << std::endl;
+
 			std::cin.get();
-			closesocket(sockfd);
+			closesocket(sockfd); // zamknięcie gniiazda
 			return 0;
 
-		}
-		case 10:
-		{
-			liczenieSilni();
-			break;
 		}
 		default:
 		{
@@ -223,12 +208,6 @@ int main(int argc, char *argv[])
 			continue;
 		}
 		}
-	
-		//bity identyfikatora sesji w polu danych...
-		/*bits.push_back(0);
-		bits.push_back(0);
-		bits.push_back(0);*/
-
 		// dopełnienie do modulo 8 bitów
 		if (bits.size() % 8 != 0)
 		{
@@ -239,29 +218,58 @@ int main(int argc, char *argv[])
 		std::string komunikat;
 		to_string(bits, komunikat);
 		reverse(komunikat.begin(), komunikat.end());
-		const char * msg = komunikat.c_str();
-		
+		char msg[25];
 
-		if(send(sockfd, msg, strlen(msg), 0)==-1)
+		for (int i = 0; i<komunikat.size() / 8; i++) msg[i] = byteToInt(komunikat.substr(i * 8, 8));
+
+
+		
+		int bytesSent;
+		bytesSent = (send(sockfd, msg, komunikat.size() / 8, 0));
+		if (bytesSent < 0)
 		{
 			perror("send");
 			exit(1);
 		}
-		std::cout << "Wyslane: " << msg << std::endl;
+		std::cout << "Send string: " << komunikat << std::endl;
+		std::cout << "Send bytes: " << bytesSent << std::endl;
+		
 		std::cin.get();
 
-		char bufor[100];
+		char bufor[25];
+
 		int numBytes;
-		if ((numBytes = recv(sockfd, bufor, strlen(bufor)-1, 0)) == -1)
+		if ((numBytes = recv(sockfd, bufor, 25, 0)) == -1)
 		{
 			perror("recv");
 			exit(1);
 		}
+
 		std::string odebrane;
-		for (int i = 0; i < numBytes; i++) odebrane += bufor[i];// usunięcie nieznaczących bitów
-		std::cout << "Odebrane: " << odebrane << std::endl;
+		//zamiana char[] na string
+		for (int i = 0; i < numBytes; i++)
+		{
 
+			for (int j = 0; j < 256; j++)
+			{
+				if (bufor[i] == (char)j)
+				{
+					std::string temp = decimalToBinary(j);
+					while (temp.size() != 8)
+					{
+						std::string temp2 = temp;
+						temp = "0";
+						temp += temp2;
+					}
+					odebrane += temp;
+				}
+			}
+		}
 
+		std::cout << "Recived string: " << odebrane << std::endl;
+		std::cout << "Recived bytes: " << numBytes << std::endl;
+
+		// odbiór komunikatu i zapisywanie go w zmiennych
 		std::string operacja;
 		operacja += odebrane[0];
 		operacja += odebrane[1];
@@ -289,16 +297,11 @@ int main(int argc, char *argv[])
 		long long wynik = stoll(wynikS, 0, 2);
 		if (znak == "0") wynik *= -1;
 
-		//std::cout << odebrane << std::endl;
-		//std::cout <<  operacja  << statusSesji << dlugoscDanychS << IDS << std::endl;
-
-
-		if(statusSesji == "0000") std::cout << "Wynik: " << wynik << std::endl; // wynik
+		if(statusSesji == "0000") std::cout << "Answer: " << wynik << std::endl; // wynik
 		else if(statusSesji == "0001") std::cout << "Blad. Wynik przekracza rozmiar integer." << std::endl;
 		else if (statusSesji == "0011") std::cout << "Blad. Dzielnik nie moze byc rowny 0." << std::endl;
 		else if (statusSesji == "0100") std::cout << "Blad. Argument silni musi byc wiekszy badz rowny 0." << std::endl;
 		std::cout << "Kliknij aby kontynuowac..." << std::endl;
-
 		std::cin.get();
 		boost::dynamic_bitset<> bits2(7);
 		bits = bits2;
@@ -311,20 +314,25 @@ int main(int argc, char *argv[])
 
 void dodawanie()
 {
+	// ustawienie bitów konkretnej operacji
 	bits[0] = 0;
 	bits[1] = 0;
 	bits[2] = 0;
 	dodajKomunikat();
 	std::cout << "Podaj dwie liczby do dodania: ";
-	int l1, l2;
-	std::cin >> l1 >> l2;
+	std::string l1S, l2S;
+	std::cin >> l1S >> l2S;
 
-	while ((l1 || l2) < -2147483648LL || (l1 || l2) > 2147483647)
+	// sprawdzenie przekroczenia long long
+	while (l1S.size() > 19 || l2S.size() > 19)
 	{
 		std::cout << "Liczba zbyt duza lub zbyt mala. Podaj inne dwie liczby: ";
-		std::cin >> l1 >> l2;
+		std::cin >> l1S >> l2S;
 	}
-	dodajLiczbyDoBitset(l1, l2);
+	long long l1, l2;
+	l1 = stoll(l1S, 0, 10); // konwersja string to long long
+	l2 = stoll(l2S, 0, 10);
+	dodajLiczbyDoBitset(l1, l2); // dodawanie liczb do bitsetu
 }
 void odejmowanie()
 {
@@ -333,14 +341,19 @@ void odejmowanie()
 	bits[2] = 1;
 	dodajKomunikat();
 	std::cout << "Podaj odjemna i odjemnik: ";
-	int l1, l2;
-	std::cin >> l1 >> l2;
+	std::string l1S, l2S;
+	std::cin >> l1S >> l2S;
 
-	while ((l1 || l2) < -2147483648LL || (l1 || l2) > 2147483647)
+	while (l1S.size() > 19 || l2S.size() > 19)
 	{
 		std::cout << "Liczba zbyt duza lub zbyt mala. Podaj inne dwie liczby: ";
-		std::cin >> l1 >> l2;
+		std::cin >> l1S >> l2S;
 	}
+	long long l1, l2;
+	l1 = stoll(l1S, 0, 10);
+	l2 = stoll(l2S, 0, 10);
+	std::cout << l1 << std::endl;
+	std::cout << l2 << std::endl;
 	dodajLiczbyDoBitset(l1, l2);
 }
 void mnozenie()
@@ -350,14 +363,17 @@ void mnozenie()
 	bits[2] = 0;
 	dodajKomunikat();
 	std::cout << "Podaj mnozna i mnoznik: ";
-	int l1, l2;
-	std::cin >> l1 >> l2;
+	std::string l1S, l2S;
+	std::cin >> l1S >> l2S;
 
-	while ((l1 || l2) < -2147483648LL || (l1 || l2) > 2147483647)
+	while (l1S.size() > 19 || l2S.size() > 19)
 	{
 		std::cout << "Liczba zbyt duza lub zbyt mala. Podaj inne dwie liczby: ";
-		std::cin >> l1 >> l2;
+		std::cin >> l1S >> l2S;
 	}
+	long long l1, l2;
+	l1 = stoll(l1S, 0, 10);
+	l2 = stoll(l2S, 0, 10);
 	dodajLiczbyDoBitset(l1, l2);
 }
 void dzielenie()
@@ -367,19 +383,17 @@ void dzielenie()
 	bits[2] = 1;
 	dodajKomunikat();
 	std::cout << "Podaj dzielna i dzielnik: ";
-	int l1, l2;
-	std::cin >> l1 >> l2;
+	std::string l1S, l2S;
+	std::cin >> l1S >> l2S;
 
-	while ((l1 || l2) < -2147483648LL || (l1 || l2) > 2147483647)
+	while (l1S.size() > 19 || l2S.size() > 19)
 	{
 		std::cout << "Liczba zbyt duza lub zbyt mala. Podaj inne dwie liczby: ";
-		std::cin >> l1 >> l2;
+		std::cin >> l1S >> l2S;
 	}
-	/*while(l2 == 0)
-	{
-		std::cout << "Dzielnik nie moze byc rowny 0. Podaj inny dzielnik: ";
-		std::cin >> l2;
-	}*/
+	long long l1, l2;
+	l1 = stoll(l1S, 0, 10);
+	l2 = stoll(l2S, 0, 10);
 	dodajLiczbyDoBitset(l1, l2);
 }
 void modulo()
@@ -388,14 +402,17 @@ void modulo()
 	bits[1] = 0;
 	bits[2] = 0;
 	std::cout << "Podaj dzielna i dzielnik do dzielenia z reszta: ";
-	int l1, l2;
-	std::cin >> l1 >> l2;
+	std::string l1S, l2S;
+	std::cin >> l1S >> l2S;
 
-	while ((l1 || l2) < -2147483648LL || (l1 || l2) > 2147483647)
+	while (l1S.size() > 19 || l2S.size() > 19)
 	{
 		std::cout << "Liczba zbyt duza lub zbyt mala. Podaj inne dwie liczby: ";
-		std::cin >> l1 >> l2;
+		std::cin >> l1S >> l2S;
 	}
+	long long l1, l2;
+	l1 = stoll(l1S, 0, 10);
+	l2 = stoll(l2S, 0, 10);
 	dodajLiczbyDoBitset(l1, l2);
 }
 void NWD()
@@ -405,14 +422,17 @@ void NWD()
 	bits[2] = 1;
 	dodajKomunikat();
 	std::cout << "Podaj dwie liczby: ";
-	int l1, l2;
-	std::cin >> l1 >> l2;
+	std::string l1S, l2S;
+	std::cin >> l1S >> l2S;
 
-	while ((l1 || l2) < -2147483648LL || (l1 || l2) > 2147483647)
+	while (l1S.size() > 19 || l2S.size() > 19)
 	{
 		std::cout << "Liczba zbyt duza lub zbyt mala. Podaj inne dwie liczby: ";
-		std::cin >> l1 >> l2;
+		std::cin >> l1S >> l2S;
 	}
+	long long l1, l2;
+	l1 = stoll(l1S, 0, 10);
+	l2 = stoll(l2S, 0, 10);
 	dodajLiczbyDoBitset(l1, l2);
 }
 void potegowanie()
@@ -422,14 +442,17 @@ void potegowanie()
 	bits[2] = 0;
 	dodajKomunikat();
 	std::cout << "Podaj dwie liczby do potegowania (podstawa i wykladnik): ";
-	int l1, l2;
-	std::cin >> l1 >> l2;
+	std::string l1S, l2S;
+	std::cin >> l1S >> l2S;
 
-	while ((l1 || l2) < -2147483648LL || (l1 || l2) > 2147483647)
+	while (l1S.size() > 19 || l2S.size() > 19)
 	{
 		std::cout << "Liczba zbyt duza lub zbyt mala. Podaj inne dwie liczby: ";
-		std::cin >> l1 >> l2;
+		std::cin >> l1S >> l2S;
 	}
+	long long l1, l2;
+	l1 = stoll(l1S, 0, 10);
+	l2 = stoll(l2S, 0, 10);
 	dodajLiczbyDoBitset(l1, l2);
 }
 void wieksza()
@@ -440,40 +463,47 @@ void wieksza()
 	dodajKomunikat();
 
 	std::cout << "Podaj liczbe, aby dowiedziec sie, ktora z nich jest wieksza: ";
-	int l1, l2;
-	std::cin >> l1 >> l2;
+	std::string l1S, l2S;
+	std::cin >> l1S >> l2S;
 
-	while ((l1 || l2) < -2147483648LL || (l1 || l2) > 2147483647)
+	while (l1S.size() > 19 || l2S.size() > 19)
 	{
 		std::cout << "Liczba zbyt duza lub zbyt mala. Podaj inne dwie liczby: ";
-		std::cin >> l1 >> l2;
+		std::cin >> l1S >> l2S;
 	}
+	long long l1, l2;
+	l1 = stoll(l1S, 0, 10);
+	l2 = stoll(l2S, 0, 10);
 	dodajLiczbyDoBitset(l1, l2);
 }
 void liczenieSilni()
 {
+	// domyślne bity operacji - nie maja znaczenie przy liczeniu silni
 	bits[0] = 0;
 	bits[1] = 0;
 	bits[2] = 0;
 
+	// bity pola statusu informujacego o liczeniu silni
 	bits[3] = 0;
 	bits[4] = 0;
 	bits[5] = 1;
 	bits[6] = 0;
 
 	std::cout << "Podaj liczbe: ";
-	int l1, l2 = 0;
-	std::cin >> l1;
-
-	/*while (l1 < 0 || l1 > 2147483647)
+	std::string l1S;
+	std::cin >> l1S;
+	while (l1S.size() > 19)
 	{
-		std::cout << "Liczba zbyt duza lub mniejsza od zera. Podaj inna liczbe: ";
-		std::cin >> l1;
-	}*/
+		std::cout << "Liczba zbyt duza lub zbyt mala. Podaj inna liczbe: ";
+		std::cin >> l1S;
+	}
+	int l1, l2 = 0;
+	l1 = stoll(l1S, 0, 10);
+
 	dodajLiczbyDoBitset(l1, l2);
 }
 
-std::string decimalToBinary(int liczba)
+std::string decimalToBinary(long long liczba) // konwersja z liczby dziesietnej do binarnej w postaci stringa
 {
 	if (liczba == 0) return "0";
 	if (liczba == 1) return "1";
@@ -483,9 +513,9 @@ std::string decimalToBinary(int liczba)
 	else
 		return decimalToBinary(liczba / 2) + "1";
 }
-void dodajLiczbyDoBitset(int liczba1, int liczba2) // dodaje pole dłufości danych oraz liczby do bitsetu 
+void dodajLiczbyDoBitset(long long liczba1, long long liczba2) // dodaje pole dłufości danych oraz liczby do bitsetu 
 {
-	std::string temp1 = decimalToBinary(liczba1);
+	std::string temp1 = decimalToBinary(liczba1); // konwersja z liczby dziesiętnej do binarnej
 	std::string temp2 = decimalToBinary(liczba2);
 	dlugoscDanych += temp1.size();
 	dlugoscDanych += temp2.size();
@@ -495,10 +525,7 @@ void dodajLiczbyDoBitset(int liczba1, int liczba2) // dodaje pole dłufości dan
 		miejscePierwszegoBituDrugiejLiczby++; // +1 bo znak liczby pierwszej nie jest dodany (tylko do ujemnych jest dodany)
 		dlugoscDanych++;// +1 znak jeśli jest dodatnia, bo ujemne z góry ma znak 0
 	}
-	if (liczba2 >= 0) dlugoscDanych++;// +1 znak jeśli jest dodatnia, bo ujemne z góry ma znak 0
-
-
-	//std::cout << "Dlugosc danych: " << dlugoscDanych << std::endl;
+	if (liczba2 >= 0) dlugoscDanych++;// +1 znak jeśli jest dodatnia, bo ujemna z góry ma znak 0
 
 	//dodawanie pola długości danych - musi być oddzielnie, ponieważ append dodaje liczbę i resztę wypełnia zerami do 32 bitów (dla nas to zła kolejność)
 	boost::dynamic_bitset<> poleDlugosci(0);
@@ -510,7 +537,7 @@ void dodajLiczbyDoBitset(int liczba1, int liczba2) // dodaje pole dłufości dan
 		if (ciagDlugosciDanych[i] == '1') bits.push_back(1);
 		else bits.push_back(0);
 	}
-
+	//dodawanie pola początku drugiej liczby
 	boost::dynamic_bitset<> poczatekDrugiejLiczby(0);
 	poczatekDrugiejLiczby.append(miejscePierwszegoBituDrugiejLiczby); 
 	std::string poczatekDrugiejLiczbyS;
@@ -528,7 +555,7 @@ void dodajLiczbyDoBitset(int liczba1, int liczba2) // dodaje pole dłufości dan
 
 	//dodanie liczb do bitsetu
 	int i;
-	// znak 1 liczby i uwzględnienie czy liczba jest ujemna lub dodatnia, ujemna ma dodatkowo znak 0 na początku, trzeba sie go pozbyć
+	// znak pierwszej liczby i uwzględnienie czy liczba jest ujemna lub dodatnia, ujemna ma dodatkowo znak 0 na początku, trzeba sie go pozbyć
 	if (liczba1 >= 0)
 	{
 		bits.push_back(1);
@@ -545,7 +572,7 @@ void dodajLiczbyDoBitset(int liczba1, int liczba2) // dodaje pole dłufości dan
 		else bits.push_back(0);
 	}
 
-	// znak 2 liczby i uwzględnienie czy liczba jest ujemna lub dodatnia, ujemna ma dodatkowo znak 0 na początku, trzeba sie go pozbyć
+	// znak drugiej liczby i uwzględnienie czy liczba jest ujemna lub dodatnia, ujemna ma dodatkowo znak 0 na początku, trzeba sie go pozbyć
 	if (liczba2 >= 0)
 	{
 		bits.push_back(1);
@@ -563,7 +590,7 @@ void dodajLiczbyDoBitset(int liczba1, int liczba2) // dodaje pole dłufości dan
 		else bits.push_back(0);
 	}
 }
-void dodajWartosciDoBitset(int liczba) // dodaje wartość int do bitsetu
+void dodajWartosciDoBitset(long long liczba) // dodaje wartość int do bitsetu
 {
 	std::string temp = decimalToBinary(liczba);
 	for (int i = 0; i < temp.size(); i++)
@@ -589,4 +616,14 @@ void dodajID(int ID)
 		if (IDS[i] == '1') bits.push_back(1);
 		else bits.push_back(0);
 	}
+}
+int byteToInt(std::string byte) // konwersja z bajta na liczbę typu int
+{
+	int temp = 0;
+	for (int i = byte.size() - 1, p = 1; i >= 0; i--, p *= 2)
+	{
+		if (byte[i] == '1')
+			temp += p;
+	}
+	return temp;
 }
