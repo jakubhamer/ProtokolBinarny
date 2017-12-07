@@ -6,7 +6,6 @@
 // 0100 - argument silni musi byæ wiekszy b¹dŸ równy 0.
 // 1111 - roz³¹czenie
 //
-//TODO: status sesji powinien uwzglêdniaæ wielkoœæ liczb tak podejrzewam eh i czy przy dzieleniu jest 0
 
 #include "stdafx.h"
 #include <boost/dynamic_bitset.hpp>
@@ -15,7 +14,7 @@
 #include <winsock.h>
 #include <cstdio>
 #include <iostream>
-
+#include <bitset>
 #define MY_PORT 9333   // port, z którym bêd¹ siê ³¹czyli u¿ytkownicy
 #define BACK_LOG 10     //jak du¿o mo¿e byæ oczekuj¹cych po³¹czeñ w kolejce
 #define MAX_DATA_SIZE 100 
@@ -35,9 +34,9 @@ std::string decimalToBinary(long long liczba);
 int binaryToDecimal(long long n);
 void dodajID(int ID);
 void dodajLiczbeDoBitset(long long liczba1);
+int byteToInt(std::string byte);
 
 int nextID = -1;
-char komunikat[] = "\0";
 boost::dynamic_bitset<> bits(7);
 int dlugoscDanych = 35;
 
@@ -83,40 +82,47 @@ int main()
 	while (1)
 	{;
 		sin_size = sizeof(struct sockaddr_in);
+		std::cout << "Waiting for connection...\n";
 		if ((new_fd = accept(sockfd, (struct sockaddr*)&theirAddr, &sin_size)) == -1)
 		{
 			perror("accept");
 			continue;
 		}
-		std::cout << "server: got connection from: " << inet_ntoa(theirAddr.sin_addr) << std::endl;
-		nextID++;
-		//nadanie ID klientowi
-		/*std::string nextIDS;
-		int sizeID = decimalToBinary(nextID).size();
-		while (sizeID++ < 3)  nextIDS += "0";
-		nextIDS += decimalToBinary(nextID++);
-		
-		std::string ID_message = "0000000" + nextIDS + "00000000000000000000000000000000";
-		std::bitset<42> byte(ID_message);
-		std::string a = byte.to_string();
-		const char * c = a.c_str();*/
-		
-		while(1)
+		system("cls");
+		std::cout << "Server: got connection from: " << inet_ntoa(theirAddr.sin_addr) << std::endl;
+		nextID++;	
+		while (1)
 		{
 			//otrzymanie operacji
 			char bufor[100];
 			int numBytes;
-			if ((numBytes = recv(new_fd, bufor, strlen(bufor), 0)) == -1)
+			if ((numBytes = recv(new_fd, bufor, 25, 0)) == -1)
 			{
 				perror("recv");
 				exit(1);
 			}
-
 			std::string odebrane;
-			for (int i = 0; i < numBytes; i++) odebrane += bufor[i];// usuniêcie nieznacz¹cych bitów
-			
-			std::cout << "Odebrane: " << odebrane << std::endl;
-			
+			for (int i = 0; i < numBytes; i++)
+			{
+				for (int j = 0; j < 256; j++)
+				{
+					if (bufor[i] == (char)j)
+					{
+						std::string temp = decimalToBinary(j);
+						while (temp.size() != 8)
+						{
+							std::string temp2 = temp;
+							temp = "0";
+							temp += temp2;
+						}
+						odebrane += temp;
+						
+					}
+				}
+			}
+
+			std::cout << "Recived string: " << odebrane << std::endl;
+			std::cout << "Recived bytes: " << numBytes << std::endl;
 			std::string operacja;
 			operacja += odebrane[0];
 			operacja += odebrane[1];
@@ -131,9 +137,13 @@ int main()
 
 			if (poleStatusu == "0000")
 			{
+
 				std::string dlugoscDanychS;
+
 				for (int i = 7; i < 39; i++) dlugoscDanychS += odebrane[i];
+
 				long long dlugoscDanychLong = stoll(dlugoscDanychS, 0, 2); // string to long long, gdzie podstawa to system binarny
+
 				dlugoscDanychLong -= 35; // 32 bity miejsca drugiej liczby, 3 bity ID
 
 				std::string poczatekDrugiejLiczbyS;
@@ -158,11 +168,6 @@ int main()
 				for (int i = poczatekDrugiejLiczby + 1; i < dlugoscDanychLong + 74; i++) l2S += odebrane[i];
 				long long l2 = stoll(l2S, 0, 2);
 				if (znakL2 == "0") l2 *= -1;
-				std::cout << l1 << std::endl;
-				std::cout << l2 << std::endl;
-
-				//std::cout <<  operacja  << "----" << dlugoscDanychS << poczatekDrugiejLiczbyS << ID << "*" << znakL1 << l1S << "*" << znakL2 << l2S << std::endl;
-
 	
 				switch (stoll(operacja, 0, 2))
 					{
@@ -219,16 +224,21 @@ int main()
 				std::string komunikat;
 				to_string(bits, komunikat);
 				reverse(komunikat.begin(), komunikat.end());
-				const char * msg = komunikat.c_str();
-				std::cout << "Wyslane: " << msg << std::endl;
 
+				char msg[25];
+				
+				for (int i = 0; i<komunikat.size() / 8; i++) msg[i] = byteToInt(komunikat.substr(i * 8, 8));
+				
+				int bytesSent;
 
-				if ((send(new_fd, msg, strlen(msg), 0)) == -1)
+				bytesSent = (send(new_fd, msg, komunikat.size() / 8, 0));
+				if (bytesSent < 0)
 				{
 					perror("send");
 					exit(1);
 				}
-
+				std::cout << "Send string: " << komunikat << std::endl;
+				std::cout << "Send bytes: " << bytesSent << std::endl;
 
 				boost::dynamic_bitset<> bits2(7);
 				bits = bits2;
@@ -270,16 +280,21 @@ int main()
 				std::string komunikat;
 				to_string(bits, komunikat);
 				reverse(komunikat.begin(), komunikat.end());
-				const char * msg = komunikat.c_str();
-				std::cout << "Wyslane: " << msg << std::endl;
 
+				char msg[25];
 
-				if ((send(new_fd, msg, strlen(msg), 0)) == -1)
+				for (int i = 0; i<komunikat.size() / 8; i++) msg[i] = byteToInt(komunikat.substr(i * 8, 8));
+
+				int bytesSent;
+
+				bytesSent = (send(new_fd, msg, komunikat.size() / 8, 0));
+				if (bytesSent < 0)
 				{
 					perror("send");
 					exit(1);
 				}
-
+				std::cout << "Send string: " << komunikat << std::endl;
+				std::cout << "Send bytes: " << bytesSent << std::endl;
 
 				boost::dynamic_bitset<> bits2(7);
 				bits = bits2;
@@ -289,13 +304,13 @@ int main()
 			}
 			else if(poleStatusu == "1111")
 			{
-				std::cout << "Rozlaczenie." << std::endl;
+				std::cout << "Disconnecting." << std::endl;
 				shutdown(new_fd, 2);
 				closesocket(sockfd);
 				return 0;
 			}
 		}
-		nextID--;
+		
 
 	}
 }
@@ -614,4 +629,14 @@ void dodajID(int ID)
 		if (IDS[i] == '1') bits.push_back(1);
 		else bits.push_back(0);
 	}
+}
+int byteToInt(std::string byte) 
+{
+	int temp = 0;
+	for (int i = byte.size() - 1, p = 1; i >= 0; i--, p *= 2)
+	{
+		if (byte[i] == '1')
+			temp += p;
+	}
+	return temp;
 }
