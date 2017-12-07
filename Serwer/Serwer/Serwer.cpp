@@ -1,6 +1,6 @@
 // KOMUNIKATY
 // 0000 - brak b³êdów, wykonuj dzia³ania na dóch liczbach
-// 0001 - wynik przekracza maksymaln¹ wartoœæ
+// 0001 - wynik wykracza poza zakres
 // 0010 - licz silnie
 // 0011 - dzielnik nie mo¿e byæ równy 0
 // 0100 - argument silni musi byæ wiekszy b¹dŸ równy 0.
@@ -43,8 +43,8 @@ int dlugoscDanych = 35;
 
 int main()
 {
+	// konfiguracja pod system windows
 	WSADATA wsaData;
-
 	if (WSAStartup(MAKEWORD(1, 1), &wsaData) != 0)
 	{
 		fprintf(stderr, "WSAStartup failed.\n");
@@ -52,7 +52,7 @@ int main()
 	}
 
 	int sockfd; //deskryptor gniazda
-	if ((sockfd = socket(PF_INET, SOCK_STREAM, 0)) == -1)
+	if ((sockfd = socket(PF_INET, SOCK_STREAM, 0)) == -1) // zwraca deskryptor gniazda
 	{
 		perror("socket");
 		exit(1);
@@ -65,12 +65,12 @@ int main()
 	myAddr.sin_addr.s_addr = htonl(INADDR_ANY); //inet_addr("192.168.43.121"); //mój adres
 	memset(&myAddr.sin_zero, '\0', 8);
 
-	if (bind(sockfd, (struct sockaddr *) &myAddr, sizeof(struct sockaddr)) == -1)
+	if (bind(sockfd, (struct sockaddr *) &myAddr, sizeof(struct sockaddr)) == -1) // przypisanie gniazda do portu na maszynie lokalnej
 	{
 		perror("bind");
 		exit(1);
 	}
-	if (listen(sockfd, BACK_LOG) == -1)
+	if (listen(sockfd, BACK_LOG) == -1) // nas³uchiwanie przychodz¹cych po³¹czeñ
 	{
 		perror("listen");
 		exit(1);
@@ -78,12 +78,11 @@ int main()
 
 
 	int sin_size;
-	//datagram
 	while (1)
 	{;
 		sin_size = sizeof(struct sockaddr_in);
 		std::cout << "Waiting for connection...\n";
-		if ((new_fd = accept(sockfd, (struct sockaddr*)&theirAddr, &sin_size)) == -1)
+		if ((new_fd = accept(sockfd, (struct sockaddr*)&theirAddr, &sin_size)) == -1) // akceptacja przychodz¹cego po³¹czenia
 		{
 			perror("accept");
 			continue;
@@ -93,15 +92,16 @@ int main()
 		nextID++;	
 		while (1)
 		{
-			//otrzymanie operacji
+			// otrzymanie operacji
 			char bufor[100];
-			int numBytes;
+			int numBytes; // iloœæ otrzymanych bajtów
 			if ((numBytes = recv(new_fd, bufor, 25, 0)) == -1)
 			{
 				perror("recv");
 				exit(1);
 			}
 			std::string odebrane;
+			//zamiana char[] na string
 			for (int i = 0; i < numBytes; i++)
 			{
 				for (int j = 0; j < 256; j++)
@@ -227,7 +227,7 @@ int main()
 
 				char msg[25];
 				
-				for (int i = 0; i<komunikat.size() / 8; i++) msg[i] = byteToInt(komunikat.substr(i * 8, 8));
+				for (int i = 0; i<komunikat.size() / 8; i++) msg[i] = byteToInt(komunikat.substr(i * 8, 8)); // zamiana ka¿dego bajtu na integer
 				
 				int bytesSent;
 
@@ -240,6 +240,7 @@ int main()
 				std::cout << "Send string: " << komunikat << std::endl;
 				std::cout << "Send bytes: " << bytesSent << std::endl;
 
+				// resetowanie zmiennych
 				boost::dynamic_bitset<> bits2(7);
 				bits = bits2;
 				dlugoscDanych = 35;
@@ -283,7 +284,7 @@ int main()
 
 				char msg[25];
 
-				for (int i = 0; i<komunikat.size() / 8; i++) msg[i] = byteToInt(komunikat.substr(i * 8, 8));
+				for (int i = 0; i<komunikat.size() / 8; i++) msg[i] = byteToInt(komunikat.substr(i * 8, 8)); // zamiana ka¿dego bajtu na integer
 
 				int bytesSent;
 
@@ -317,6 +318,7 @@ int main()
 
 void dodawanie(long long l1, long long l2)
 {
+	// ustawienie bitów operacji
 	bits[0] = 0;
 	bits[1] = 0;
 	bits[2] = 0;
@@ -325,13 +327,15 @@ void dodawanie(long long l1, long long l2)
 
 	if(wynik < -2147483648LL || wynik > 2147483647)
 	{
+		// ustawienie bitów pola statusu - wynik wykracza poza zakres
 		bits[3] = 0;
 		bits[4] = 0;
 		bits[5] = 0;
 		bits[6] = 1;
 	}
 	else
-	{
+	{	
+		// ustawienie bitów pola statusu - brak b³êdów
 		bits[3] = 0;
 		bits[4] = 0;
 		bits[5] = 0;
@@ -350,6 +354,7 @@ void odejmowanie(long long l1, long long l2)
 
 	if (wynik < -2147483648LL || wynik > 2147483647)
 	{
+		// ustawienie bitów pola statusu - wynik wykracza poza zakres
 		bits[3] = 0;
 		bits[4] = 0;
 		bits[5] = 0;
@@ -375,6 +380,7 @@ void mnozenie(long long l1, long long l2)
 
 	if (wynik < -2147483648LL || wynik > 2147483647LL)
 	{
+		// ustawienie bitów pola statusu - wynik wykracza poza zakres
 		bits[3] = 0;
 		bits[4] = 0;
 		bits[5] = 0;
@@ -397,7 +403,7 @@ void dzielenie(long long l1, long long l2)
 	bits[2] = 1;
 	if (l2 == 0)
 	{
-		std::cout << "l2: " << l2 << std::endl;
+		// ustawienie bitów pola statusu - dzielnik nie mo¿e byæ równy 0
 		bits[3] = 0;
 		bits[4] = 0;
 		bits[5] = 1;
@@ -409,6 +415,7 @@ void dzielenie(long long l1, long long l2)
 	long long wynik = (long long)l1 / (long long)l2;
 	if (wynik < -2147483648LL || wynik > 2147483647)
 	{
+		// ustawienie bitów pola statusu - wynik wykracza poza zakres
 		bits[3] = 0;
 		bits[4] = 0;
 		bits[5] = 0;
@@ -432,6 +439,7 @@ void modulo(long long l1, long long l2)
 
 	if (l2 == 0)
 	{
+		// ustawienie bitów pola statusu - dzielnik nie mo¿e byæ równy 0
 		bits[3] = 0;
 		bits[4] = 0;
 		bits[5] = 1;
@@ -443,6 +451,7 @@ void modulo(long long l1, long long l2)
 	long long wynik = (long long)l1 % (long long)l2;
 	if (wynik < -2147483648LL || wynik > 2147483647)
 	{
+		// ustawienie bitów pola statusu - wynik wykracza poza zakres
 		bits[3] = 0;
 		bits[4] = 0;
 		bits[5] = 0;
@@ -490,6 +499,7 @@ void potegowanie(long long l1, long long l2)
 	long long wynik = pow((long long)l1, (long long)l2);
 	if (wynik < -2147483648LL || wynik > 2147483647)
 	{
+		// ustawienie bitów pola statusu - wynik wykracza poza zakres
 		bits[3] = 0;
 		bits[4] = 0;
 		bits[5] = 0;
@@ -533,6 +543,7 @@ void liczenieSilni(int l1)
 
 	if (l1 < 0)
 	{
+		// ustawienie bitów pola statusu - argument silni musi byæ wiekszy b¹dŸ równy 0
 		bits[3] = 0;
 		bits[4] = 1;
 		bits[5] = 0;
@@ -545,6 +556,7 @@ void liczenieSilni(int l1)
 	
 	if (wynik  < -2147483648LL || wynik > 2147483647)
 	{
+		// ustawienie bitów pola statusu - wynik wykracza poza zakres
 		bits[3] = 0;
 		bits[4] = 0;
 		bits[5] = 0;
@@ -566,7 +578,7 @@ long long silnia(int x)
 	else return x*silnia(x - 1);
 }
 
-std::string decimalToBinary(long long liczba)
+std::string decimalToBinary(long long liczba) // konwersja z liczby dziesietnej do binarnej w postaci stringa
 {
 	if (liczba == 0) return "0";
 	if (liczba == 1) return "1";
