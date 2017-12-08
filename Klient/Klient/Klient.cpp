@@ -92,7 +92,7 @@ int main()
 		std::cout << "6. GCD\n"; //101
 		std::cout << "7. Exponentiation\n"; //110
 		std::cout << "8. Which number is bigger?\n"; //111
-		std::cout << "9. Factorial\n"; //111
+		std::cout << "9. Factorial\n"; //000
 		std::cout << "10. Disconnecting with server\n"; //pole statusu - licz silnie  0010
 		std::cin >> choice;
 		switch (choice)
