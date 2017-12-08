@@ -1,10 +1,10 @@
 // KOMUNIKATY
-// 0000 - brak b³êdów, wykonuj dzia³ania na dóch liczbach
+// 0000 - brak bÂ³ÃªdÃ³w, wykonuj dziaÂ³ania na dwÃ³ch liczbach
 // 0001 - wynik wykracza poza zakres
 // 0010 - licz silnie
-// 0011 - dzielnik nie mo¿e byæ równy 0
-// 0100 - argument silni musi byæ wiekszy b¹dŸ równy 0.
-// 1111 - roz³¹czenie
+// 0011 - dzielnik nie moÂ¿e byÃ¦ rÃ³wny 0
+// 0100 - argument silni musi byÃ¦ wiekszy bÂ¹dÅ¸ rÃ³wny 0.
+// 1111 - rozÂ³Â¹czenie
 //
 
 #include "stdafx.h"
@@ -15,8 +15,8 @@
 #include <cstdio>
 #include <iostream>
 #include <bitset>
-#define MY_PORT 9333   // port, z którym bêd¹ siê ³¹czyli u¿ytkownicy
-#define BACK_LOG 10     //jak du¿o mo¿e byæ oczekuj¹cych po³¹czeñ w kolejce
+#define MY_PORT 9333   // port, z ktÃ³rym bÃªdÂ¹ siÃª Â³Â¹czyli uÂ¿ytkownicy
+#define BACK_LOG 10     //jak duÂ¿o moÂ¿e byÃ¦ oczekujÂ¹cych poÂ³Â¹czeÃ± w kolejce
 #define MAX_DATA_SIZE 100 
 
 void dodawanie(long long l1, long long l2);
@@ -57,12 +57,12 @@ int main()
 		perror("socket");
 		exit(1);
 	}
-	int new_fd; // adres przychodz¹cy - deskryptor
-	sockaddr_in myAddr; // mój adres
-	sockaddr_in theirAddr; // adres przychodz¹cy
+	int new_fd; // adres przychodzÂ¹cy - deskryptor
+	sockaddr_in myAddr; // mÃ³j adres
+	sockaddr_in theirAddr; // adres przychodzÂ¹cy
 	myAddr.sin_family = PF_INET;
 	myAddr.sin_port = htons(MY_PORT); // numer portu
-	myAddr.sin_addr.s_addr = htonl(INADDR_ANY); //inet_addr("192.168.43.121"); //mój adres
+	myAddr.sin_addr.s_addr = htonl(INADDR_ANY); //inet_addr("192.168.43.121"); //mÃ³j adres
 	memset(&myAddr.sin_zero, '\0', 8);
 
 	if (bind(sockfd, (struct sockaddr *) &myAddr, sizeof(struct sockaddr)) == -1) // przypisanie gniazda do portu na maszynie lokalnej
@@ -70,7 +70,7 @@ int main()
 		perror("bind");
 		exit(1);
 	}
-	if (listen(sockfd, BACK_LOG) == -1) // nas³uchiwanie przychodz¹cych po³¹czeñ
+	if (listen(sockfd, BACK_LOG) == -1) // nasÂ³uchiwanie przychodzÂ¹cych poÂ³Â¹czeÃ±
 	{
 		perror("listen");
 		exit(1);
@@ -82,7 +82,7 @@ int main()
 	{;
 		sin_size = sizeof(struct sockaddr_in);
 		std::cout << "Waiting for connection...\n";
-		if ((new_fd = accept(sockfd, (struct sockaddr*)&theirAddr, &sin_size)) == -1) // akceptacja przychodz¹cego po³¹czenia
+		if ((new_fd = accept(sockfd, (struct sockaddr*)&theirAddr, &sin_size)) == -1) // akceptacja przychodzÂ¹cego poÂ³Â¹czenia
 		{
 			perror("accept");
 			continue;
@@ -94,7 +94,7 @@ int main()
 		{
 			// otrzymanie operacji
 			char bufor[100];
-			int numBytes; // iloœæ otrzymanych bajtów
+			int numBytes; // iloÅ“Ã¦ otrzymanych bajtÃ³w
 			if ((numBytes = recv(new_fd, bufor, 25, 0)) == -1)
 			{
 				perror("recv");
@@ -214,7 +214,7 @@ int main()
 
 					}
 
-				// uzupe³nienie komunikatu do ca³ych bajtów
+				// uzupeÂ³nienie komunikatu do caÂ³ych bajtÃ³w
 				if (bits.size() % 8 != 0)
 				{
 					int temp = bits.size() % 8;
@@ -227,7 +227,7 @@ int main()
 
 				char msg[25];
 				
-				for (int i = 0; i<komunikat.size() / 8; i++) msg[i] = byteToInt(komunikat.substr(i * 8, 8)); // zamiana ka¿dego bajtu na integer
+				for (int i = 0; i<komunikat.size() / 8; i++) msg[i] = byteToInt(komunikat.substr(i * 8, 8)); // zamiana kaÂ¿dego bajtu na integer
 				
 				int bytesSent;
 
@@ -271,7 +271,7 @@ int main()
 
 				liczenieSilni(l1);
 
-				// uzupe³nienie komunikatu do ca³ych bajtów
+				// uzupeÂ³nienie komunikatu do caÂ³ych bajtÃ³w
 				if (bits.size() % 8 != 0)
 				{
 					int temp = bits.size() % 8;
@@ -284,7 +284,7 @@ int main()
 
 				char msg[25];
 
-				for (int i = 0; i<komunikat.size() / 8; i++) msg[i] = byteToInt(komunikat.substr(i * 8, 8)); // zamiana ka¿dego bajtu na integer
+				for (int i = 0; i<komunikat.size() / 8; i++) msg[i] = byteToInt(komunikat.substr(i * 8, 8)); // zamiana kaÂ¿dego bajtu na integer
 
 				int bytesSent;
 
@@ -318,7 +318,7 @@ int main()
 
 void dodawanie(long long l1, long long l2)
 {
-	// ustawienie bitów operacji
+	// ustawienie bitÃ³w operacji
 	bits[0] = 0;
 	bits[1] = 0;
 	bits[2] = 0;
@@ -327,7 +327,7 @@ void dodawanie(long long l1, long long l2)
 
 	if(wynik < -2147483648LL || wynik > 2147483647)
 	{
-		// ustawienie bitów pola statusu - wynik wykracza poza zakres
+		// ustawienie bitÃ³w pola statusu - wynik wykracza poza zakres
 		bits[3] = 0;
 		bits[4] = 0;
 		bits[5] = 0;
@@ -335,7 +335,7 @@ void dodawanie(long long l1, long long l2)
 	}
 	else
 	{	
-		// ustawienie bitów pola statusu - brak b³êdów
+		// ustawienie bitÃ³w pola statusu - brak bÂ³ÃªdÃ³w
 		bits[3] = 0;
 		bits[4] = 0;
 		bits[5] = 0;
@@ -354,7 +354,7 @@ void odejmowanie(long long l1, long long l2)
 
 	if (wynik < -2147483648LL || wynik > 2147483647)
 	{
-		// ustawienie bitów pola statusu - wynik wykracza poza zakres
+		// ustawienie bitÃ³w pola statusu - wynik wykracza poza zakres
 		bits[3] = 0;
 		bits[4] = 0;
 		bits[5] = 0;
@@ -380,7 +380,7 @@ void mnozenie(long long l1, long long l2)
 
 	if (wynik < -2147483648LL || wynik > 2147483647LL)
 	{
-		// ustawienie bitów pola statusu - wynik wykracza poza zakres
+		// ustawienie bitÃ³w pola statusu - wynik wykracza poza zakres
 		bits[3] = 0;
 		bits[4] = 0;
 		bits[5] = 0;
@@ -403,7 +403,7 @@ void dzielenie(long long l1, long long l2)
 	bits[2] = 1;
 	if (l2 == 0)
 	{
-		// ustawienie bitów pola statusu - dzielnik nie mo¿e byæ równy 0
+		// ustawienie bitÃ³w pola statusu - dzielnik nie moÂ¿e byÃ¦ rÃ³wny 0
 		bits[3] = 0;
 		bits[4] = 0;
 		bits[5] = 1;
@@ -415,7 +415,7 @@ void dzielenie(long long l1, long long l2)
 	long long wynik = (long long)l1 / (long long)l2;
 	if (wynik < -2147483648LL || wynik > 2147483647)
 	{
-		// ustawienie bitów pola statusu - wynik wykracza poza zakres
+		// ustawienie bitÃ³w pola statusu - wynik wykracza poza zakres
 		bits[3] = 0;
 		bits[4] = 0;
 		bits[5] = 0;
@@ -439,7 +439,7 @@ void modulo(long long l1, long long l2)
 
 	if (l2 == 0)
 	{
-		// ustawienie bitów pola statusu - dzielnik nie mo¿e byæ równy 0
+		// ustawienie bitÃ³w pola statusu - dzielnik nie moÂ¿e byÃ¦ rÃ³wny 0
 		bits[3] = 0;
 		bits[4] = 0;
 		bits[5] = 1;
@@ -451,7 +451,7 @@ void modulo(long long l1, long long l2)
 	long long wynik = (long long)l1 % (long long)l2;
 	if (wynik < -2147483648LL || wynik > 2147483647)
 	{
-		// ustawienie bitów pola statusu - wynik wykracza poza zakres
+		// ustawienie bitÃ³w pola statusu - wynik wykracza poza zakres
 		bits[3] = 0;
 		bits[4] = 0;
 		bits[5] = 0;
@@ -476,7 +476,7 @@ void NWD(long long l1, long long l2)
 	l1 = abs(l1);
 	l2 = abs(l2);
 
-	while (l1 != l2) // l1 staje siê wynikiem
+	while (l1 != l2) // l1 staje siÃª wynikiem
 	{
 		if (l1 < l2) l2 -= l1;
 		else l1 -= l2;
@@ -499,7 +499,7 @@ void potegowanie(long long l1, long long l2)
 	long long wynik = pow((long long)l1, (long long)l2);
 	if (wynik < -2147483648LL || wynik > 2147483647)
 	{
-		// ustawienie bitów pola statusu - wynik wykracza poza zakres
+		// ustawienie bitÃ³w pola statusu - wynik wykracza poza zakres
 		bits[3] = 0;
 		bits[4] = 0;
 		bits[5] = 0;
@@ -535,7 +535,7 @@ void wieksza(long long l1, long long l2)
 }
 void liczenieSilni(int l1)
 {
-	// bity niewa¿ne
+	// bity niewaÂ¿ne
 	bits[0] = 0;
 	bits[1] = 0;
 	bits[2] = 0;
@@ -543,7 +543,7 @@ void liczenieSilni(int l1)
 
 	if (l1 < 0)
 	{
-		// ustawienie bitów pola statusu - argument silni musi byæ wiekszy b¹dŸ równy 0
+		// ustawienie bitÃ³w pola statusu - argument silni musi byÃ¦ wiekszy bÂ¹dÅ¸ rÃ³wny 0
 		bits[3] = 0;
 		bits[4] = 1;
 		bits[5] = 0;
@@ -556,7 +556,7 @@ void liczenieSilni(int l1)
 	
 	if (wynik  < -2147483648LL || wynik > 2147483647)
 	{
-		// ustawienie bitów pola statusu - wynik wykracza poza zakres
+		// ustawienie bitÃ³w pola statusu - wynik wykracza poza zakres
 		bits[3] = 0;
 		bits[4] = 0;
 		bits[5] = 0;
@@ -588,7 +588,7 @@ std::string decimalToBinary(long long liczba) // konwersja z liczby dziesietnej 
 	else
 		return decimalToBinary(liczba / 2) + "1";
 }
-void dodajLiczbeDoBitset(long long liczba1) // dodaje pole d³ufoœci danych oraz liczby do bitsetu 
+void dodajLiczbeDoBitset(long long liczba1) // dodaje pole dÂ³ufoÅ“ci danych oraz liczby do bitsetu 
 {
 	std::string temp1 = decimalToBinary(liczba1);
 	dlugoscDanych += temp1.size();
@@ -596,7 +596,7 @@ void dodajLiczbeDoBitset(long long liczba1) // dodaje pole d³ufoœci danych oraz 
 	if (liczba1 >= 0) dlugoscDanych++;
 
 
-	//dodawanie pola d³ugoœci danych - musi byæ oddzielnie, poniewa¿ append dodaje liczbê i resztê wype³nia zerami do 32 bitów (dla nas to z³a kolejnoœæ)
+	//dodawanie pola dÂ³ugoÅ“ci danych - musi byÃ¦ oddzielnie, poniewaÂ¿ append dodaje liczbÃª i resztÃª wypeÂ³nia zerami do 32 bitÃ³w (dla nas to zÂ³a kolejnoÅ“Ã¦)
 	boost::dynamic_bitset<> poleDlugosci(0);
 	poleDlugosci.append(dlugoscDanych);
 	std::string ciagDlugosciDanych;
@@ -610,7 +610,7 @@ void dodajLiczbeDoBitset(long long liczba1) // dodaje pole d³ufoœci danych oraz 
 	//dodanie ID sesji
 	dodajID(nextID);
 	
-	// znak liczby i uwzglêdnienie czy liczba jest ujemna lub dodatnia, ujemna ma dodatkowo znak 0 na pocz¹tku, trzeba sie go pozbyæ
+	// znak liczby i uwzglÃªdnienie czy liczba jest ujemna lub dodatnia, ujemna ma dodatkowo znak 0 na poczÂ¹tku, trzeba sie go pozbyÃ¦
 
 	int i;
 	if (liczba1 > 0)
@@ -635,7 +635,7 @@ void dodajLiczbeDoBitset(long long liczba1) // dodaje pole d³ufoœci danych oraz 
 void dodajID(int ID)
 {
 	std::string IDS = decimalToBinary(ID);
-	for (int i = 0; i < 3 - IDS.size(); i++) bits.push_back(0); // dope³nienie do 3 bitów
+	for (int i = 0; i < 3 - IDS.size(); i++) bits.push_back(0); // dopeÂ³nienie do 3 bitÃ³w
 	for (int i = 0; i < IDS.size(); i++)
 	{
 		if (IDS[i] == '1') bits.push_back(1);
